@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-seed-admin-user
+      author: developer
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: $2a$10$fS5rIlxLW.ZE7Dr/oLc1JuYnFCVIctXvxihKdzU5sdWOHA6aSFmBi
+              - column:
+                  name: role
+                  value: ADMIN

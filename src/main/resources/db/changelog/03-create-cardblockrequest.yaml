@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: '3'
+      author: superadmin (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_card_block_request
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: card_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: person_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: block_request_status
+                  type: VARCHAR(255)
+              - column:
+                  name: created_date
+                  type: timestamp with time zone
+              - column:
+                  name: last_modified_date
+                  type: timestamp with time zone
+            tableName: card_block_request
+        - addForeignKeyConstraint:
+            baseColumnNames: person_id
+            baseTableName: card_block_request
+            constraintName: FK_CARD_BLOCK_REQUEST_ON_PERSON
+            referencedColumnNames: id
+            referencedTableName: person
+        - addForeignKeyConstraint:
+            baseColumnNames: card_id
+            baseTableName: card_block_request
+            constraintName: FK_CARD_BLOCK_REQUEST_ON_CARD
+            referencedColumnNames: id
+            referencedTableName: card
+

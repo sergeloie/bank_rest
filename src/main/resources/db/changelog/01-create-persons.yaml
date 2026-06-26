@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: '1'
+      author: superadmin (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_person
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: password
+                  type: VARCHAR(255)
+              - column:
+                  name: role
+                  type: VARCHAR(255)
+              - column:
+                  name: created_date
+                  type: timestamp with time zone
+              - column:
+                  name: last_modified_date
+                  type: timestamp with time zone
+            tableName: person
+        - addUniqueConstraint:
+            columnNames: name
+            constraintName: UC_PERSON_NAME
+            tableName: person
+
