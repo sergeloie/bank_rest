@@ -7,6 +7,8 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+    parameters:
+      BANK_ADMIN_PASSWORD: ${BANK_ADMIN_PASSWORD}
 
 springdoc:
   api-docs:
@@ -16,6 +18,11 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
 
+card-encryption-secret: ${CARD_ENCRYPTION_SECRET}
+
+jwt:
+  secret: ${BANK_JWT_SECRET}
+  expiration: 86400000
 
 #Что нужно сделать:
 #  - Указать настройки подключения к базе данных.
