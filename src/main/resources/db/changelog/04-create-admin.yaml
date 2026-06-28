@@ -4,10 +4,10 @@ databaseChangeLog:
       author: developer
       changes:
         - insert:
-            tableName: users
+            tableName: person
             columns:
               - column:
-                  name: username
+                  name: name
                   value: admin
               - column:
                   name: password

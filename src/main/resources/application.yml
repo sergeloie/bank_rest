@@ -2,15 +2,8 @@ server:
   port: 8080
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/bank_cards
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
+  profiles:
+    active: dev
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
