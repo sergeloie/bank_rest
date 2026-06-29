@@ -50,4 +50,8 @@ databaseChangeLog:
             constraintName: FK_CARD_ON_PERSON
             referencedColumnNames: id
             referencedTableName: person
+        - addUniqueConstraint:
+            columnNames: encrypted_number
+            constraintName: uk_card_encrypted_number
+            tableName: card
 
