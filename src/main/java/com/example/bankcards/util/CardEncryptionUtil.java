@@ -1,6 +1,5 @@
 package com.example.bankcards.util;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,7 @@ public class CardEncryptionUtil {
 
     private final SecretKeySpec secretKeySpec;
 
-    public CardEncryptionUtil(@Value("${card-encryption-secret}") String secret) {
+    public CardEncryptionUtil(@Value("${card.encryption.secret}") String secret) {
         this.secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), ALGORITHM);
     }
 

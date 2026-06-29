@@ -18,7 +18,11 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
 
-card-encryption-secret: ${CARD_ENCRYPTION_SECRET}
+card:
+  bin: "400000"
+  retry-limit: 100
+  encryption:
+    secret: ${CARD_ENCRYPTION_SECRET}
 
 jwt:
   secret: ${BANK_JWT_SECRET}
