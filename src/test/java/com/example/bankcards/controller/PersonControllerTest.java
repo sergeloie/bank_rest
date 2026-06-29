@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonDto;
+import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
@@ -44,7 +44,7 @@ class PersonControllerTest {
 
     @Test
     void getAllPersons_shouldReturnPage() throws Exception {
-        PersonDto dto = new PersonDto(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
         when(personService.getAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -56,7 +56,7 @@ class PersonControllerTest {
 
     @Test
     void getPersonById_shouldReturnPerson() throws Exception {
-        PersonDto dto = new PersonDto(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
         when(personService.getById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/persons/1"))
@@ -75,7 +75,7 @@ class PersonControllerTest {
     @Test
     void createPerson_shouldReturn201() throws Exception {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        PersonDto dto = new PersonDto(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/persons")
@@ -110,7 +110,7 @@ class PersonControllerTest {
     @Test
     void updatePerson_shouldReturn200() throws Exception {
         PersonUpdateRequest request = new PersonUpdateRequest("Bob", "newpass", Role.ADMIN);
-        PersonDto dto = new PersonDto(1L, "Bob", Role.ADMIN, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Bob", Role.ADMIN, null, null);
         when(personService.update(1L, request)).thenReturn(dto);
 
         mockMvc.perform(put("/api/persons/1")

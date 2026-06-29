@@ -1,7 +1,7 @@
 package com.example.bankcards.mapper;
 
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonDto;
+import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.entity.Person;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
@@ -13,7 +13,7 @@ public interface PersonMapper {
 
     PersonCreateRequest toPersonCreateRequest(Person person);
 
-    Person toEntity(PersonDto personDto);
+    Person toEntity(PersonResponse personResponse);
 
-    PersonDto toPersonDto(Person person);
+    PersonResponse toPersonResponse(Person person);
 }

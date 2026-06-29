@@ -1,7 +1,7 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonDto;
+import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.exception.DuplicateResourceException;
@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -21,25 +22,29 @@ public class PersonService {
     private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
     private static final String PERSON_EXISTS = "Person already exists with name: %s";
 
-    public Page<PersonDto> getAll(Pageable pageable) {
-        return personRepository.findAll(pageable).map(personMapper::toPersonDto);
+    @Transactional(readOnly = true)
+    public Page<PersonResponse> getAll(Pageable pageable) {
+        return personRepository.findAll(pageable).map(personMapper::toPersonResponse);
     }
 
-    public PersonDto getById(Long id) {
+    @Transactional(readOnly = true)
+    public PersonResponse getById(Long id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
-        return personMapper.toPersonDto(person);
+        return personMapper.toPersonResponse(person);
     }
 
-    public PersonDto create(PersonCreateRequest request) {
+    @Transactional
+    public PersonResponse create(PersonCreateRequest request) {
         if (personRepository.existsByName(request.name())) {
             throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
         Person person = personMapper.toEntity(request);
-        return personMapper.toPersonDto(personRepository.save(person));
+        return personMapper.toPersonResponse(personRepository.save(person));
     }
 
-    public PersonDto update(Long id, PersonUpdateRequest request) {
+    @Transactional
+    public PersonResponse update(Long id, PersonUpdateRequest request) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
 
@@ -50,9 +55,10 @@ public class PersonService {
         person.setName(request.name());
         person.setPassword(request.password());
         person.setRole(request.role());
-        return personMapper.toPersonDto(personRepository.save(person));
+        return personMapper.toPersonResponse(personRepository.save(person));
     }
 
+    @Transactional
     public void delete(Long id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));

@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonDto;
+import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.service.PersonService;
 import jakarta.validation.Valid;
@@ -19,22 +19,22 @@ public class PersonController {
     private final PersonService personService;
 
     @GetMapping
-    public ResponseEntity<Page<PersonDto>> getAllPersons(Pageable pageable) {
+    public ResponseEntity<Page<PersonResponse>> getAllPersons(Pageable pageable) {
         return ResponseEntity.ok(personService.getAll(pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PersonDto> getPersonById(@PathVariable Long id) {
+    public ResponseEntity<PersonResponse> getPersonById(@PathVariable Long id) {
         return ResponseEntity.ok(personService.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<PersonDto> createPerson(@Valid @RequestBody PersonCreateRequest request) {
+    public ResponseEntity<PersonResponse> createPerson(@Valid @RequestBody PersonCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(personService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PersonDto> updatePerson(@PathVariable Long id,
+    public ResponseEntity<PersonResponse> updatePerson(@PathVariable Long id,
                                                   @Valid @RequestBody PersonUpdateRequest request) {
         return ResponseEntity.ok(personService.update(id, request));
     }
