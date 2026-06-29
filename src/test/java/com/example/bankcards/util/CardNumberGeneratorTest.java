@@ -35,18 +35,8 @@ public class CardNumberGeneratorTest {
         assertNotEquals(card1, card2);
         assertEquals(bin, card1.substring(0,6));
         assertEquals(bin, card2.substring(0,6));
-        assertTrue(cardNumberGenerator.isValidLuhn(card1));
-        assertTrue(cardNumberGenerator.isValidLuhn(card2));
-    }
-
-    @Test
-    public void isValidLuhnTest() {
-        assertTrue(cardNumberGenerator.isValidLuhn("4111111111111111"));
-        assertTrue(cardNumberGenerator.isValidLuhn("4627100101654724"));
-        assertTrue(cardNumberGenerator.isValidLuhn("5204240438720059"));
-        assertTrue(cardNumberGenerator.isValidLuhn("5204240438720067"));
-        assertTrue(cardNumberGenerator.isValidLuhn("2201382000000021"));
-        assertTrue(cardNumberGenerator.isValidLuhn("2204290100000006"));
+        assertTrue(isValidLuhn(card1));
+        assertTrue(isValidLuhn(card2));
     }
 
     @Test
@@ -62,5 +52,20 @@ public class CardNumberGeneratorTest {
         when(cardRepository.existsByEncryptedNumber(any())).thenReturn(true);
         Exception exception = assertThrows(CardNumberGenerationException.class, cardNumberGenerator::generate);
         assertEquals("Failed to generate unique card number after " + maxRetry + " attempts", exception.getMessage());
+    }
+
+    private boolean isValidLuhn(String cardNumber) {
+        int sum = 0;
+        boolean doubleDigit = false;
+        for (int i = cardNumber.length() - 1; i >= 0; i--) {
+            int digit = Character.getNumericValue(cardNumber.charAt(i));
+            if (doubleDigit) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            doubleDigit = !doubleDigit;
+        }
+        return sum % 10 == 0;
     }
 }

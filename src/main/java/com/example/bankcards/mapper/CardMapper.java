@@ -10,8 +10,8 @@ public interface CardMapper {
     @Mapping(source = "personId", target = "person.id")
     Card toEntity(CardCreateRequest cardCreateRequest);
 
-    @Mapping(source = "person.id", target = "personId")
-    CardCreateRequest toCardCreateRequest(Card card);
+//    @Mapping(source = "person.id", target = "personId")
+//    CardCreateRequest toCardCreateRequest(Card card);
 
     @Mapping(source = "personName", target = "person.name")
     @Mapping(source = "personId", target = "person.id")
