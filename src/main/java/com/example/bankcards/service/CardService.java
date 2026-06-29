@@ -28,8 +28,8 @@ public class CardService {
     private final CardMapper cardMapper;
     private final CardNumberGenerator cardNumberGenerator;
     private final CardEncryptionUtil cardEncryptionUtil;
-    private final String personNotFound = "Person not found with id: %d";
-    private final String cardNotFound = "Card not found with id: %d";
+    private final static String personNotFound = "Person not found with id: %d";
+    private final static String cardNotFound = "Card not found with id: %d";
 
     public Page<CardResponse> getCardsByPerson(Long personId, Pageable pageable) {
         if (!personRepository.existsById(personId)) {
