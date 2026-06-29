@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 public class PersonService {
     private final PersonRepository personRepository;
     private final PersonMapper personMapper;
-    private final static String personNotFound = "Person not found with id: %d";
-    private final static String personExists = "Person already exists with name: %s";
+    private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
+    private static final String PERSON_EXISTS = "Person already exists with name: %s";
 
     public Page<PersonDto> getAll(Pageable pageable) {
         return personRepository.findAll(pageable).map(personMapper::toPersonDto);
@@ -27,13 +27,13 @@ public class PersonService {
 
     public PersonDto getById(Long id) {
         Person person = personRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(personNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         return personMapper.toPersonDto(person);
     }
 
     public PersonDto create(PersonCreateRequest request) {
         if (personRepository.existsByName(request.name())) {
-            throw new DuplicateResourceException(String.format(personExists, request.name()));
+            throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
         Person person = personMapper.toEntity(request);
         return personMapper.toPersonDto(personRepository.save(person));
@@ -41,10 +41,10 @@ public class PersonService {
 
     public PersonDto update(Long id, PersonUpdateRequest request) {
         Person person = personRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(personNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
 
         if (!person.getName().equals(request.name()) && personRepository.existsByName(request.name())) {
-            throw new DuplicateResourceException(String.format(personExists, request.name()));
+            throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
 
         person.setName(request.name());
@@ -55,7 +55,7 @@ public class PersonService {
 
     public void delete(Long id) {
         Person person = personRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(personNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         personRepository.delete(person);
     }
 }

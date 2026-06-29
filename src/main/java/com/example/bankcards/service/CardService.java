@@ -28,25 +28,25 @@ public class CardService {
     private final CardMapper cardMapper;
     private final CardNumberGenerator cardNumberGenerator;
     private final CardEncryptionUtil cardEncryptionUtil;
-    private final static String personNotFound = "Person not found with id: %d";
-    private final static String cardNotFound = "Card not found with id: %d";
+    private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
+    private static final String CARD_NOT_FOUND = "Card not found with id: %d";
 
     public Page<CardResponse> getCardsByPerson(Long personId, Pageable pageable) {
         if (!personRepository.existsById(personId)) {
-            throw new ResourceNotFoundException(String.format(personNotFound, personId));
+            throw new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, personId));
         }
         return cardRepository.findByPerson_Id(personId, pageable).map(cardMapper::toCardResponse);
     }
 
     public CardResponse getCardById(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(cardNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         return cardMapper.toCardResponse(card);
     }
 
     public CardResponse createCard(CardCreateRequest request) {
         Person person = personRepository.findById(request.personId())
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(personNotFound, request.personId())));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, request.personId())));
 
         if (request.expirationDate().isBefore(LocalDate.now(ZoneId.systemDefault()))) {
             throw new InvalidCardOperationException("Expiration date must not be in the past");
@@ -67,7 +67,7 @@ public class CardService {
 
     public CardResponse blockCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(cardNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
         if (card.getCardStatus() != CardStatus.ACTIVE) {
             throw new InvalidCardOperationException("Only active cards can be blocked");
@@ -79,7 +79,7 @@ public class CardService {
 
     public CardResponse activateCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(cardNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
         if (card.getCardStatus() != CardStatus.BLOCKED) {
             throw new InvalidCardOperationException("Only blocked cards can be activated");
@@ -91,7 +91,7 @@ public class CardService {
 
     public void deleteCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(cardNotFound, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         cardRepository.delete(card);
     }
 }
