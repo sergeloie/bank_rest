@@ -96,7 +96,7 @@ class TransferServiceTest {
         Person person1 = createPerson(1L);
         Person person2 = createPerson(2L);
         Card fromCard = createCard(1L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        Card toCard = createCard(2L, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
         CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 99L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
