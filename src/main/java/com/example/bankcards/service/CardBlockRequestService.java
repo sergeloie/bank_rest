@@ -1,7 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestCreate;
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestDto;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardBlockRequest;
@@ -28,7 +28,7 @@ public class CardBlockRequestService {
     private final CardBlockRequestMapper cardBlockRequestMapper;
 
     @Transactional
-    public CardBlockRequestDto createRequest(CardBlockRequestCreate request) {
+    public CardBlockRequestResponse createRequest(CardBlockRequestRequest request) {
         Card card = cardRepository.findById(request.cardId())
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + request.cardId()));
 
@@ -48,16 +48,17 @@ public class CardBlockRequestService {
         blockRequest.setPerson(person);
         blockRequest.setBlockRequestStatus(BlockRequestStatus.PENDING);
 
-        return cardBlockRequestMapper.toDto(cardBlockRequestRepository.save(blockRequest));
+        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
     }
 
-    public Page<CardBlockRequestDto> getPendingRequests(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<CardBlockRequestResponse> getPendingRequests(Pageable pageable) {
         return cardBlockRequestRepository.findByBlockRequestStatus(BlockRequestStatus.PENDING, pageable)
-                .map(cardBlockRequestMapper::toDto);
+                .map(cardBlockRequestMapper::toResponse);
     }
 
     @Transactional
-    public CardBlockRequestDto approveRequest(Long requestId) {
+    public CardBlockRequestResponse approveRequest(Long requestId) {
         CardBlockRequest blockRequest = cardBlockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Block request not found with id: " + requestId));
 
@@ -68,11 +69,11 @@ public class CardBlockRequestService {
         blockRequest.setBlockRequestStatus(BlockRequestStatus.APPROVED);
         blockRequest.getCard().setCardStatus(CardStatus.BLOCKED);
 
-        return cardBlockRequestMapper.toDto(cardBlockRequestRepository.save(blockRequest));
+        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
     }
 
     @Transactional
-    public CardBlockRequestDto rejectRequest(Long requestId) {
+    public CardBlockRequestResponse rejectRequest(Long requestId) {
         CardBlockRequest blockRequest = cardBlockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Block request not found with id: " + requestId));
 
@@ -82,6 +83,6 @@ public class CardBlockRequestService {
 
         blockRequest.setBlockRequestStatus(BlockRequestStatus.REJECTED);
 
-        return cardBlockRequestMapper.toDto(cardBlockRequestRepository.save(blockRequest));
+        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
     }
 }

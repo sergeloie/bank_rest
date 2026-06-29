@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestCreate;
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestDto;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
@@ -42,9 +42,9 @@ class CardBlockRequestControllerTest {
 
     @Test
     void createBlockRequest_shouldReturn201() throws Exception {
-        CardBlockRequestCreate request = new CardBlockRequestCreate(1L, 1L);
-        CardBlockRequestDto dto = new CardBlockRequestDto(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
-        when(cardBlockRequestService.createRequest(any(CardBlockRequestCreate.class))).thenReturn(dto);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
+        when(cardBlockRequestService.createRequest(any(CardBlockRequestRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/block-requests")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,7 +55,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void createBlockRequest_shouldReturn400OnValidation() throws Exception {
-        CardBlockRequestCreate request = new CardBlockRequestCreate(null, null);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(null, null);
 
         mockMvc.perform(post("/api/block-requests")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void getPendingRequests_shouldReturnPage() throws Exception {
-        CardBlockRequestDto dto = new CardBlockRequestDto(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
         when(cardBlockRequestService.getPendingRequests(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -77,7 +77,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void approveRequest_shouldReturn200() throws Exception {
-        CardBlockRequestDto dto = new CardBlockRequestDto(1L, 1L, 1L, BlockRequestStatus.APPROVED, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.APPROVED, null, null);
         when(cardBlockRequestService.approveRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/approve"))
@@ -105,7 +105,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void rejectRequest_shouldReturn200() throws Exception {
-        CardBlockRequestDto dto = new CardBlockRequestDto(1L, 1L, 1L, BlockRequestStatus.REJECTED, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.REJECTED, null, null);
         when(cardBlockRequestService.rejectRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/reject"))

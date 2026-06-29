@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.Instant;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CardBlockRequestDto(
+public record CardBlockRequestResponse(
     Long id,
     Long cardId,
     Long personId,
