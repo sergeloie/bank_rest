@@ -12,6 +12,7 @@ import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.util.CardEncryptionUtil;
+import com.example.bankcards.util.CardMaskUtil;
 import com.example.bankcards.util.CardNumberGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,9 @@ class CardServiceTest {
     @Mock
     private CardEncryptionUtil cardEncryptionUtil;
 
+    @Mock
+    private CardMaskUtil cardMaskUtil;
+
     @InjectMocks
     private CardService cardService;
 
@@ -61,6 +65,8 @@ class CardServiceTest {
         when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(card)));
         when(cardMapper.toCardResponse(card)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         Page<CardResponse> result = cardService.getCardsByPerson(1L, PageRequest.of(0, 10));
 
@@ -82,6 +88,8 @@ class CardServiceTest {
         CardResponse dto = createCardResponse(1L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(cardMapper.toCardResponse(card)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         CardResponse result = cardService.getCardById(1L);
 
@@ -106,6 +114,8 @@ class CardServiceTest {
         when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         CardResponse result = cardService.createCard(request);
 
@@ -138,6 +148,8 @@ class CardServiceTest {
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         CardResponse result = cardService.blockCard(1L);
 
@@ -169,6 +181,8 @@ class CardServiceTest {
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         CardResponse result = cardService.activateCard(1L);
 
@@ -223,6 +237,6 @@ class CardServiceTest {
     }
 
     private CardResponse createCardResponse(Long id) {
-        return new CardResponse(id, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        return new CardResponse(id, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
     }
 }

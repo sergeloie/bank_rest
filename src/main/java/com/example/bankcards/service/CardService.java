@@ -11,6 +11,7 @@ import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.util.CardEncryptionUtil;
+import com.example.bankcards.util.CardMaskUtil;
 import com.example.bankcards.util.CardNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class CardService {
     private final CardMapper cardMapper;
     private final CardNumberGenerator cardNumberGenerator;
     private final CardEncryptionUtil cardEncryptionUtil;
+    private final CardMaskUtil cardMaskUtil;
     private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
     private static final String CARD_NOT_FOUND = "Card not found with id: %d";
 
@@ -38,14 +40,15 @@ public class CardService {
         if (!personRepository.existsById(personId)) {
             throw new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, personId));
         }
-        return cardRepository.findByPerson_Id(personId, pageable).map(cardMapper::toCardResponse);
+        return cardRepository.findByPerson_Id(personId, pageable)
+                .map(card -> enrichWithMaskedNumber(cardMapper.toCardResponse(card), card));
     }
 
     @Transactional(readOnly = true)
     public CardResponse getCardById(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
-        return cardMapper.toCardResponse(card);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
     }
 
     @Transactional
@@ -67,7 +70,8 @@ public class CardService {
         card.setCardStatus(CardStatus.ACTIVE);
         card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
 
-        return cardMapper.toCardResponse(cardRepository.save(card));
+        Card saved = cardRepository.save(card);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
     }
 
     @Transactional
@@ -80,7 +84,8 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.BLOCKED);
-        return cardMapper.toCardResponse(cardRepository.save(card));
+        Card saved = cardRepository.save(card);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
     }
 
     @Transactional
@@ -93,7 +98,8 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.ACTIVE);
-        return cardMapper.toCardResponse(cardRepository.save(card));
+        Card saved = cardRepository.save(card);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
     }
 
     @Transactional
@@ -101,5 +107,21 @@ public class CardService {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         cardRepository.delete(card);
+    }
+
+    private CardResponse enrichWithMaskedNumber(CardResponse response, Card card) {
+        String plainNumber = cardEncryptionUtil.decrypt(card.getEncryptedNumber());
+        String masked = cardMaskUtil.mask(plainNumber);
+        return new CardResponse(
+                response.id(),
+                response.personId(),
+                response.personName(),
+                masked,
+                response.expirationDate(),
+                response.cardStatus(),
+                response.balance(),
+                response.createdDate(),
+                response.lastModifiedDate()
+        );
     }
 }

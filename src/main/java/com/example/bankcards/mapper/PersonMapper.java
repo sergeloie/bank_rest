@@ -11,9 +11,5 @@ import org.mapstruct.ReportingPolicy;
 public interface PersonMapper {
     Person toEntity(PersonCreateRequest personCreateRequest);
 
-//    PersonCreateRequest toPersonCreateRequest(Person person);
-
-//    Person toEntity(PersonResponse personResponse);
-
     PersonResponse toPersonResponse(Person person);
 }

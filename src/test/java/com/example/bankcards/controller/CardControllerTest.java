@@ -48,24 +48,26 @@ class CardControllerTest {
 
     @Test
     void getCardsByPerson_shouldReturnPage() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
         when(cardService.getCardsByPerson(1L, PageRequest.of(0, 10)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
         mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].cardStatus").value("ACTIVE"));
+                .andExpect(jsonPath("$.content[0].cardStatus").value("ACTIVE"))
+                .andExpect(jsonPath("$.content[0].maskedNumber").value("**** **** **** 7890"));
     }
 
     @Test
     void getCardById_shouldReturnCard() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
         when(cardService.getCardById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/cards/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.maskedNumber").value("**** **** **** 7890"));
     }
 
     @Test
@@ -79,14 +81,15 @@ class CardControllerTest {
     @Test
     void createCard_shouldReturn201() throws Exception {
         CardCreateRequest request = new CardCreateRequest(1L, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
         when(cardService.createCard(any(CardCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/cards")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.maskedNumber").value("**** **** **** 7890"));
     }
 
     @Test
@@ -101,7 +104,7 @@ class CardControllerTest {
 
     @Test
     void blockCard_shouldReturn200() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.BLOCKED, BigDecimal.valueOf(100), null, null);
+        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.BLOCKED, BigDecimal.valueOf(100), null, null);
         when(cardService.blockCard(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/cards/1/block"))
@@ -119,7 +122,7 @@ class CardControllerTest {
 
     @Test
     void activateCard_shouldReturn200() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
         when(cardService.activateCard(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/cards/1/activate"))
