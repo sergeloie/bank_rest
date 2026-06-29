@@ -1,5 +1,6 @@
 package com.example.bankcards.util;
 
+import com.example.bankcards.exception.CardEncryptionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,7 @@ public class CardEncryptionUtil {
             byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            throw new RuntimeException("Encrypt card number failed", e);
+            throw new CardEncryptionException("Encrypt card number failed", e);
         }
     }
 
@@ -37,7 +38,7 @@ public class CardEncryptionUtil {
             byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
             return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("Decrypt card number failed", e);
+            throw new CardEncryptionException("Decrypt card number failed", e);
         }
     }
 }
