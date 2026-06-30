@@ -21,6 +21,7 @@ public class CardEncryptionUtil {
 
     private final SecretKeySpec encryptionKeySpec;
     private final SecretKeySpec hashKeySpec;
+    private final SecureRandom secureRandom;
 
     public CardEncryptionUtil(@Value("${card.encryption.secret}") String encryptionSecret,
                               @Value("${card.hash.secret}") String hashSecret) {
@@ -28,12 +29,13 @@ public class CardEncryptionUtil {
                 encryptionSecret.getBytes(StandardCharsets.UTF_8), "AES");
         this.hashKeySpec = new SecretKeySpec(
                 hashSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        secureRandom = new SecureRandom();
     }
 
     public String encrypt(String plainText) {
         try {
             byte[] iv = new byte[GCM_IV_LENGTH];
-            new SecureRandom().nextBytes(iv);
+            secureRandom.nextBytes(iv);
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
