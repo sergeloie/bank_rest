@@ -43,7 +43,7 @@ class CardBlockRequestControllerTest {
     @Test
     void createBlockRequest_shouldReturn201() throws Exception {
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING);
         when(cardBlockRequestService.createRequest(any(CardBlockRequestRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/block-requests")
@@ -65,7 +65,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void getPendingRequests_shouldReturnPage() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING);
         when(cardBlockRequestService.getPendingRequests(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -77,7 +77,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void approveRequest_shouldReturn200() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.APPROVED, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.APPROVED);
         when(cardBlockRequestService.approveRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/approve"))
@@ -105,7 +105,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void rejectRequest_shouldReturn200() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.REJECTED, null, null);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.REJECTED);
         when(cardBlockRequestService.rejectRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/reject"))
@@ -120,5 +120,14 @@ class CardBlockRequestControllerTest {
 
         mockMvc.perform(patch("/api/block-requests/1/reject"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rejectRequest_shouldReturn404() throws Exception {
+        when(cardBlockRequestService.rejectRequest(99L))
+                .thenThrow(new ResourceNotFoundException("Block request not found"));
+
+        mockMvc.perform(patch("/api/block-requests/99/reject"))
+                .andExpect(status().isNotFound());
     }
 }

@@ -69,7 +69,7 @@ public class CardBlockRequestService {
         blockRequest.setBlockRequestStatus(BlockRequestStatus.APPROVED);
         blockRequest.getCard().setCardStatus(CardStatus.BLOCKED);
 
-        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
+        return cardBlockRequestMapper.toResponse(blockRequest);
     }
 
     @Transactional
@@ -83,6 +83,6 @@ public class CardBlockRequestService {
 
         blockRequest.setBlockRequestStatus(BlockRequestStatus.REJECTED);
 
-        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
+        return cardBlockRequestMapper.toResponse(blockRequest);
     }
 }

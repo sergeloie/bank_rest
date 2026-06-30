@@ -7,11 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-
 public interface CardBlockRequestRepository extends JpaRepository<CardBlockRequest, Long> {
     @EntityGraph(attributePaths = {"card", "person"})
     Page<CardBlockRequest> findByBlockRequestStatus(BlockRequestStatus blockRequestStatus, Pageable pageable);
-
-    List<CardBlockRequest> findByCard_Person_Id(Long id);
 }

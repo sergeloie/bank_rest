@@ -127,13 +127,13 @@ class CardBlockRequestServiceTest {
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.APPROVED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardBlockRequestRepository.save(any(CardBlockRequest.class))).thenReturn(blockRequest);
         when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
 
         CardBlockRequestResponse result = cardBlockRequestService.approveRequest(1L);
 
         assertEquals(BlockRequestStatus.APPROVED, result.blockRequestStatus());
         assertEquals(CardStatus.BLOCKED, card.getCardStatus());
+        verify(cardBlockRequestRepository, never()).save(any());
     }
 
     @Test
@@ -160,12 +160,12 @@ class CardBlockRequestServiceTest {
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.REJECTED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardBlockRequestRepository.save(any(CardBlockRequest.class))).thenReturn(blockRequest);
         when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
 
         CardBlockRequestResponse result = cardBlockRequestService.rejectRequest(1L);
 
         assertEquals(BlockRequestStatus.REJECTED, result.blockRequestStatus());
+        verify(cardBlockRequestRepository, never()).save(any());
     }
 
     @Test
@@ -176,6 +176,13 @@ class CardBlockRequestServiceTest {
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
 
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.rejectRequest(1L));
+    }
+
+    @Test
+    void rejectRequest_shouldThrowWhenNotFound() {
+        when(cardBlockRequestRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.rejectRequest(99L));
     }
 
     private Person createPerson(Long id) {
@@ -205,6 +212,6 @@ class CardBlockRequestServiceTest {
     }
 
     private CardBlockRequestResponse createBlockResponse(Long id, BlockRequestStatus status) {
-        return new CardBlockRequestResponse(id, 1L, 1L, status, null, null);
+        return new CardBlockRequestResponse(id, 1L, 1L, status);
     }
 }
