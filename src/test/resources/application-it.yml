@@ -19,3 +19,5 @@ card:
   retry-limit: 100
   encryption:
     secret: "1234567890123456"
+  hash:
+    secret: "1234567890123456"

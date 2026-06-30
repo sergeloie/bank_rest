@@ -59,11 +59,13 @@ public class CardService {
 
         String plainNumber = cardNumberGenerator.generate();
         String encryptedNumber = cardEncryptionUtil.encrypt(plainNumber);
+        String cardHash = cardEncryptionUtil.hash(plainNumber);
 
         Card card = new Card();
         card.setPerson(person);
         card.setExpirationDate(request.expirationDate());
         card.setEncryptedNumber(encryptedNumber);
+        card.setCardHash(cardHash);
         card.setCardStatus(CardStatus.ACTIVE);
         card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
 

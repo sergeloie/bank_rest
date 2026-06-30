@@ -43,6 +43,11 @@ databaseChangeLog:
               - column:
                   name: last_modified_date
                   type: timestamp with time zone
+              - column:
+                  constraints:
+                    nullable: false
+                  name: card_hash
+                  type: VARCHAR(255)
             tableName: card
         - addForeignKeyConstraint:
             baseColumnNames: person_id
@@ -53,5 +58,9 @@ databaseChangeLog:
         - addUniqueConstraint:
             columnNames: encrypted_number
             constraintName: uk_card_encrypted_number
+            tableName: card
+        - addUniqueConstraint:
+            columnNames: card_hash
+            constraintName: uk_card_hash
             tableName: card
 

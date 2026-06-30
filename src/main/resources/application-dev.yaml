@@ -15,3 +15,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+card:
+  encryption:
+    secret: "1234567890123456"
+  hash:
+    secret: "1234567890123456"

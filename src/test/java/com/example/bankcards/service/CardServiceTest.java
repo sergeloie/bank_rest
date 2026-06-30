@@ -115,6 +115,7 @@ class CardServiceTest {
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(cardNumberGenerator.generate()).thenReturn("4000001234567890");
         when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
+        when(cardEncryptionUtil.hash("4000001234567890")).thenReturn("hash");
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
@@ -138,6 +139,7 @@ class CardServiceTest {
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(cardNumberGenerator.generate()).thenReturn("4000001234567890");
         when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
+        when(cardEncryptionUtil.hash("4000001234567890")).thenReturn("hash");
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");

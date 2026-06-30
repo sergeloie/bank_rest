@@ -23,6 +23,8 @@ card:
   retry-limit: 100
   encryption:
     secret: ${CARD_ENCRYPTION_SECRET}
+  hash:
+    secret: ${CARD_HASH_SECRET}
 
 jwt:
   secret: ${BANK_JWT_SECRET}

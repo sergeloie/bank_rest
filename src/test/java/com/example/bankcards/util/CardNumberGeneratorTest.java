@@ -29,7 +29,7 @@ class CardNumberGeneratorTest {
 
     @Test
     void generateTest() {
-        when(cardRepository.existsByEncryptedNumber(any())).thenReturn(false);
+        when(cardRepository.existsByCardHash(any())).thenReturn(false);
         String card1 = cardNumberGenerator.generate();
         String card2 = cardNumberGenerator.generate();
         assertNotEquals(card1, card2);
@@ -41,7 +41,7 @@ class CardNumberGeneratorTest {
 
     @Test
     void generateTestThrowException() {
-        when(cardRepository.existsByEncryptedNumber(any())).thenReturn(true);
+        when(cardRepository.existsByCardHash(any())).thenReturn(true);
         Exception exception = assertThrows(CardNumberGenerationException.class, cardNumberGenerator::generate);
         assertEquals("Failed to generate unique card number after " + maxRetry + " attempts", exception.getMessage());
     }

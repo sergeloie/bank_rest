@@ -25,6 +25,9 @@ public class Card {
     @Column(name = "encrypted_number", nullable = false)
     private String encryptedNumber;
 
+    @Column(name = "card_hash", nullable = false)
+    private String cardHash;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;

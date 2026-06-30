@@ -36,8 +36,8 @@ public class CardNumberGenerator {
             String partial = sb.toString();
             int checkDigit = luhnCheckDigit(partial);
             String candidate = partial + checkDigit;
-            String encrypted = cardEncryptionUtil.encrypt(candidate);
-            if (!cardRepository.existsByEncryptedNumber(encrypted)) {
+            String cardHash = cardEncryptionUtil.hash(candidate);
+            if (!cardRepository.existsByCardHash(cardHash)) {
                 return candidate;
             }
 

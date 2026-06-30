@@ -10,7 +10,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     @EntityGraph(attributePaths = {"person"})
     Page<Card> findByPerson_Id(Long id, Pageable pageable);
 
-    boolean existsByEncryptedNumber(String encryptedNumber);
+    boolean existsByCardHash(String cardHash);
 
     boolean existsByPerson_Id(Long id);
 }
