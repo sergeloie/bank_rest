@@ -45,7 +45,7 @@ class PersonControllerTest {
 
     @Test
     void getAllPersons_shouldReturnPage() throws Exception {
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
+        PersonResponse dto = new PersonResponse("Alice", Role.USER);
         when(personService.getAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -57,7 +57,7 @@ class PersonControllerTest {
 
     @Test
     void getPersonById_shouldReturnPerson() throws Exception {
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
+        PersonResponse dto = new PersonResponse("Alice", Role.USER);
         when(personService.getById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/persons/1"))
@@ -76,7 +76,7 @@ class PersonControllerTest {
     @Test
     void createPerson_shouldReturn201() throws Exception {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
+        PersonResponse dto = new PersonResponse("Alice", Role.USER);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/persons")
@@ -112,7 +112,7 @@ class PersonControllerTest {
     @Test
     void updatePerson_shouldReturn200() throws Exception {
         PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.ADMIN);
+        PersonResponse dto = new PersonResponse("Alice", Role.ADMIN);
         when(personService.update(1L, request)).thenReturn(dto);
 
         mockMvc.perform(put("/api/persons/1")

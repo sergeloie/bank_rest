@@ -6,5 +6,5 @@ import com.example.bankcards.entity.Role;
 /**
  * DTO for {@link Person}
  */
-public record PersonResponse(Long id, String name, Role role) {
+public record PersonResponse(String name, Role role) {
 }

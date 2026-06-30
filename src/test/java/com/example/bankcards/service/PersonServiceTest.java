@@ -46,7 +46,7 @@ class PersonServiceTest {
     @Test
     void getAll_shouldReturnPage() {
         Person person = createPerson(1L, "Alice");
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         Page<Person> page = new PageImpl<>(List.of(person));
         when(personRepository.findAll(any(PageRequest.class))).thenReturn(page);
         when(personMapper.toPersonResponse(person)).thenReturn(dto);
@@ -60,7 +60,7 @@ class PersonServiceTest {
     @Test
     void getById_shouldReturnPerson() {
         Person person = createPerson(1L, "Alice");
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(personMapper.toPersonResponse(person)).thenReturn(dto);
 
@@ -80,7 +80,7 @@ class PersonServiceTest {
     void create_shouldCreatePerson() {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
         Person person = createPerson(1L, "Alice");
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         when(personMapper.toEntity(request)).thenReturn(person);
         when(personRepository.save(person)).thenReturn(person);
         when(personMapper.toPersonResponse(person)).thenReturn(dto);
@@ -105,7 +105,7 @@ class PersonServiceTest {
     void update_shouldUpdatePasswordAndRole() {
         Person person = createPerson(1L, "Alice");
         PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenReturn(person);
         when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
@@ -121,7 +121,7 @@ class PersonServiceTest {
     void update_shouldUpdatePasswordOnly() {
         Person person = createPerson(1L, "Alice");
         PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenReturn(person);
         when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
@@ -136,7 +136,7 @@ class PersonServiceTest {
     void update_shouldUpdateRoleOnly() {
         Person person = createPerson(1L, "Alice");
         PersonUpdateRequest request = new PersonUpdateRequest(null, Role.ADMIN);
-        PersonResponse dto = createPersonResponse(1L, "Alice");
+        PersonResponse dto = createPersonResponse("Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenReturn(person);
         when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
@@ -192,7 +192,7 @@ class PersonServiceTest {
         return p;
     }
 
-    private PersonResponse createPersonResponse(Long id, String name) {
-        return new PersonResponse(id, name, Role.USER);
+    private PersonResponse createPersonResponse(String name) {
+        return new PersonResponse(name, Role.USER);
     }
 }
