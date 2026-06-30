@@ -28,7 +28,7 @@ class CardNumberGeneratorTest {
 
 
     @Test
-    public void generateTest() {
+    void generateTest() {
         when(cardRepository.existsByEncryptedNumber(any())).thenReturn(false);
         String card1 = cardNumberGenerator.generate();
         String card2 = cardNumberGenerator.generate();
@@ -40,7 +40,7 @@ class CardNumberGeneratorTest {
     }
 
     @Test
-    public void luhnCheckDigitTest() {
+    void luhnCheckDigitTest() {
         assertEquals(1, cardNumberGenerator.luhnCheckDigit("220138200000002"));
         assertEquals(1, cardNumberGenerator.luhnCheckDigit("411111111111111"));
         assertEquals(7, cardNumberGenerator.luhnCheckDigit("520424043872006"));
