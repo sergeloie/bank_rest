@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class CardEncryptionUtilTest {
+class CardEncryptionUtilTest {
     private static final String TEST_KEY = "0491a39ec1da88c8246b7a8e805bea21";
     private final CardEncryptionUtil cardEncryptionUtil = new CardEncryptionUtil(TEST_KEY);
 

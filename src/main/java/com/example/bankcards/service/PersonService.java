@@ -43,7 +43,7 @@ public class PersonService {
         Person person = personMapper.toEntity(request);
         try {
             return personMapper.toPersonResponse(personRepository.save(person));
-        } catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException _) {
             throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
     }

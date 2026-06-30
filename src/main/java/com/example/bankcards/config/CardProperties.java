@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @Getter
 @Setter
 public class CardProperties {
-    @Pattern(regexp = "^[0-9]{6}$")
+    @Pattern(regexp = "^\\d{6}$")
     private String bin;
     private int retryLimit;
 }

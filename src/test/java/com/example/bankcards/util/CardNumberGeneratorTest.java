@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class CardNumberGeneratorTest {
+class CardNumberGeneratorTest {
 
     private final int maxRetry = 1989;
     private final String bin = "155155";
