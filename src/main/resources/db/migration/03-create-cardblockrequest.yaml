@@ -48,4 +48,5 @@ databaseChangeLog:
             constraintName: FK_CARD_BLOCK_REQUEST_ON_CARD
             referencedColumnNames: id
             referencedTableName: card
+            onDelete: CASCADE
 
