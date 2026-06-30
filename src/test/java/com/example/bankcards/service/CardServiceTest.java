@@ -61,7 +61,6 @@ class CardServiceTest {
         Person person = createPerson(1L);
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardResponse dto = createCardResponse(1L);
-        when(personRepository.existsById(1L)).thenReturn(true);
         when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(card)));
         when(cardMapper.toCardResponse(card)).thenReturn(dto);
@@ -71,14 +70,17 @@ class CardServiceTest {
         Page<CardResponse> result = cardService.getCardsByPerson(1L, PageRequest.of(0, 10));
 
         assertEquals(1, result.getContent().size());
+        assertEquals("**** **** **** 7890", result.getContent().get(0).maskedNumber());
     }
 
     @Test
-    void getCardsByPerson_shouldThrowWhenPersonNotFound() {
-        when(personRepository.existsById(99L)).thenReturn(false);
+    void getCardsByPerson_shouldReturnEmptyPageWhenNoCards() {
+        when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of()));
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> cardService.getCardsByPerson(99L, PageRequest.of(0, 10)));
+        Page<CardResponse> result = cardService.getCardsByPerson(1L, PageRequest.of(0, 10));
+
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -94,6 +96,7 @@ class CardServiceTest {
         CardResponse result = cardService.getCardById(1L);
 
         assertEquals(1L, result.id());
+        assertEquals("**** **** **** 7890", result.maskedNumber());
     }
 
     @Test
@@ -120,7 +123,30 @@ class CardServiceTest {
         CardResponse result = cardService.createCard(request);
 
         assertNotNull(result);
+        assertEquals(CardStatus.ACTIVE, result.cardStatus());
+        assertEquals("**** **** **** 7890", result.maskedNumber());
         verify(cardRepository).save(any(Card.class));
+    }
+
+    @Test
+    void createCard_shouldDefaultBalanceToZero() {
+        Person person = createPerson(1L);
+        CardCreateRequest request = new CardCreateRequest(1L, LocalDate.now().plusYears(1), null);
+        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        card.setBalance(BigDecimal.ZERO);
+        CardResponse dto = createCardResponse(1L);
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(cardNumberGenerator.generate()).thenReturn("4000001234567890");
+        when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
+        when(cardRepository.save(any(Card.class))).thenReturn(card);
+        when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+
+        CardResponse result = cardService.createCard(request);
+
+        assertNotNull(result);
+        verify(cardRepository).save(argThat(c -> c.getBalance().equals(BigDecimal.ZERO)));
     }
 
     @Test
@@ -146,7 +172,6 @@ class CardServiceTest {
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardResponse dto = createCardResponse(1L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
@@ -154,7 +179,8 @@ class CardServiceTest {
         CardResponse result = cardService.blockCard(1L);
 
         assertNotNull(result);
-        verify(cardRepository).save(any(Card.class));
+        assertEquals(CardStatus.BLOCKED, card.getCardStatus());
+        verify(cardRepository, never()).save(any());
     }
 
     @Test
@@ -179,7 +205,6 @@ class CardServiceTest {
         Card card = createCard(1L, person, CardStatus.BLOCKED);
         CardResponse dto = createCardResponse(1L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toCardResponse(any(Card.class))).thenReturn(dto);
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
@@ -187,6 +212,8 @@ class CardServiceTest {
         CardResponse result = cardService.activateCard(1L);
 
         assertNotNull(result);
+        assertEquals(CardStatus.ACTIVE, card.getCardStatus());
+        verify(cardRepository, never()).save(any());
     }
 
     @Test
@@ -237,6 +264,6 @@ class CardServiceTest {
     }
 
     private CardResponse createCardResponse(Long id) {
-        return new CardResponse(id, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null);
+        return new CardResponse(id, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
     }
 }

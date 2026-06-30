@@ -37,9 +37,6 @@ public class CardService {
 
     @Transactional(readOnly = true)
     public Page<CardResponse> getCardsByPerson(Long personId, Pageable pageable) {
-        if (!personRepository.existsById(personId)) {
-            throw new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, personId));
-        }
         return cardRepository.findByPerson_Id(personId, pageable)
                 .map(card -> enrichWithMaskedNumber(cardMapper.toCardResponse(card), card));
     }
@@ -84,8 +81,7 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.BLOCKED);
-        Card saved = cardRepository.save(card);
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
     }
 
     @Transactional
@@ -98,8 +94,7 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.ACTIVE);
-        Card saved = cardRepository.save(card);
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
+        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
     }
 
     @Transactional
@@ -119,9 +114,7 @@ public class CardService {
                 masked,
                 response.expirationDate(),
                 response.cardStatus(),
-                response.balance(),
-                response.createdDate(),
-                response.lastModifiedDate()
+                response.balance()
         );
     }
 }

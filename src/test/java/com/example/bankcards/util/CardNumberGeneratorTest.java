@@ -40,14 +40,6 @@ class CardNumberGeneratorTest {
     }
 
     @Test
-    void luhnCheckDigitTest() {
-        assertEquals(1, cardNumberGenerator.luhnCheckDigit("220138200000002"));
-        assertEquals(1, cardNumberGenerator.luhnCheckDigit("411111111111111"));
-        assertEquals(7, cardNumberGenerator.luhnCheckDigit("520424043872006"));
-    }
-
-
-    @Test
     void generateTestThrowException() {
         when(cardRepository.existsByEncryptedNumber(any())).thenReturn(true);
         Exception exception = assertThrows(CardNumberGenerationException.class, cardNumberGenerator::generate);

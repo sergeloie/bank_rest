@@ -10,10 +10,6 @@ public interface CardMapper {
     @Mapping(source = "personId", target = "person.id")
     Card toEntity(CardCreateRequest cardCreateRequest);
 
-    @Mapping(source = "personName", target = "person.name")
-    @Mapping(source = "personId", target = "person.id")
-    Card toEntity(CardResponse cardResponse);
-
     @InheritInverseConfiguration(name = "toEntity")
     CardResponse toCardResponse(Card card);
 }

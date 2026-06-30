@@ -45,7 +45,7 @@ public class CardNumberGenerator {
         throw new CardNumberGenerationException("Failed to generate unique card number after " + retryLimit + " attempts");
     }
 
-    public int luhnCheckDigit(String partial) {
+    private int luhnCheckDigit(String partial) {
         int sum = 0;
         boolean doubleDigit = true;
         for (int i = partial.length() - 1; i >= 0; i--) {

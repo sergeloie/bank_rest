@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-
 @RequiredArgsConstructor
 @Service
 public class TransferService {
@@ -52,9 +50,6 @@ public class TransferService {
 
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
         toCard.setBalance(toCard.getBalance().add(request.amount()));
-
-        cardRepository.save(fromCard);
-        cardRepository.save(toCard);
 
         return new CardTransferResponse(
                 fromCard.getId(),

@@ -40,7 +40,6 @@ class TransferServiceTest {
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
-        when(cardRepository.save(any(Card.class))).thenReturn(fromCard);
 
         CardTransferResponse result = transferService.transfer(request);
 
