@@ -5,6 +5,7 @@ import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
+import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.service.PersonService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +45,7 @@ class PersonControllerTest {
 
     @Test
     void getAllPersons_shouldReturnPage() throws Exception {
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
         when(personService.getAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -56,7 +57,7 @@ class PersonControllerTest {
 
     @Test
     void getPersonById_shouldReturnPerson() throws Exception {
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
         when(personService.getById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/persons/1"))
@@ -75,14 +76,15 @@ class PersonControllerTest {
     @Test
     void createPerson_shouldReturn201() throws Exception {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER, null, null);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.USER);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/persons")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Alice"));
+                .andExpect(jsonPath("$.name").value("Alice"))
+                .andExpect(jsonPath("$.role").value("USER"));
     }
 
     @Test
@@ -109,15 +111,37 @@ class PersonControllerTest {
 
     @Test
     void updatePerson_shouldReturn200() throws Exception {
-        PersonUpdateRequest request = new PersonUpdateRequest("Bob", "newpass", Role.ADMIN);
-        PersonResponse dto = new PersonResponse(1L, "Bob", Role.ADMIN, null, null);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
+        PersonResponse dto = new PersonResponse(1L, "Alice", Role.ADMIN);
         when(personService.update(1L, request)).thenReturn(dto);
 
         mockMvc.perform(put("/api/persons/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Bob"));
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test
+    void updatePerson_shouldReturn404() throws Exception {
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.USER);
+        when(personService.update(99L, request))
+                .thenThrow(new ResourceNotFoundException("Person not found"));
+
+        mockMvc.perform(put("/api/persons/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatePerson_shouldReturn400OnValidation() throws Exception {
+        String request = "{}";
+
+        mockMvc.perform(put("/api/persons/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -135,5 +159,14 @@ class PersonControllerTest {
 
         mockMvc.perform(delete("/api/persons/99"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deletePerson_shouldReturn400WhenPersonHasCards() throws Exception {
+        org.mockito.Mockito.doThrow(new InvalidCardOperationException("Cannot delete person with existing cards"))
+                .when(personService).delete(1L);
+
+        mockMvc.perform(delete("/api/persons/1"))
+                .andExpect(status().isBadRequest());
     }
 }

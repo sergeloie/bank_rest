@@ -6,14 +6,17 @@ import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
+import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.mapper.PersonMapper;
+import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +33,9 @@ class PersonServiceTest {
 
     @Mock
     private PersonRepository personRepository;
+
+    @Mock
+    private CardRepository cardRepository;
 
     @Mock
     private PersonMapper personMapper;
@@ -75,7 +81,6 @@ class PersonServiceTest {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
         Person person = createPerson(1L, "Alice");
         PersonResponse dto = createPersonResponse(1L, "Alice");
-        when(personRepository.existsByName("Alice")).thenReturn(false);
         when(personMapper.toEntity(request)).thenReturn(person);
         when(personRepository.save(person)).thenReturn(person);
         when(personMapper.toPersonResponse(person)).thenReturn(dto);
@@ -89,48 +94,72 @@ class PersonServiceTest {
     @Test
     void create_shouldThrowOnDuplicateName() {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        when(personRepository.existsByName("Alice")).thenReturn(true);
+        Person person = createPerson(1L, "Alice");
+        when(personMapper.toEntity(request)).thenReturn(person);
+        when(personRepository.save(person)).thenThrow(new DataIntegrityViolationException("duplicate"));
 
         assertThrows(DuplicateResourceException.class, () -> personService.create(request));
     }
 
     @Test
-    void update_shouldUpdatePerson() {
+    void update_shouldUpdatePasswordAndRole() {
         Person person = createPerson(1L, "Alice");
-        PersonUpdateRequest request = new PersonUpdateRequest("Bob", "newpass", Role.ADMIN);
-        PersonResponse dto = createPersonResponse(1L, "Bob");
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
+        PersonResponse dto = createPersonResponse(1L, "Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
-        when(personRepository.existsByName("Bob")).thenReturn(false);
         when(personRepository.save(any(Person.class))).thenReturn(person);
         when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
 
         PersonResponse result = personService.update(1L, request);
 
-        assertEquals("Bob", result.name());
+        assertNotNull(result);
+        verify(personMapper).updateEntity(request, person);
+        verify(personRepository).save(person);
+    }
+
+    @Test
+    void update_shouldUpdatePasswordOnly() {
+        Person person = createPerson(1L, "Alice");
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
+        PersonResponse dto = createPersonResponse(1L, "Alice");
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(personRepository.save(any(Person.class))).thenReturn(person);
+        when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
+
+        PersonResponse result = personService.update(1L, request);
+
+        assertNotNull(result);
+        verify(personMapper).updateEntity(request, person);
+    }
+
+    @Test
+    void update_shouldUpdateRoleOnly() {
+        Person person = createPerson(1L, "Alice");
+        PersonUpdateRequest request = new PersonUpdateRequest(null, Role.ADMIN);
+        PersonResponse dto = createPersonResponse(1L, "Alice");
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(personRepository.save(any(Person.class))).thenReturn(person);
+        when(personMapper.toPersonResponse(any(Person.class))).thenReturn(dto);
+
+        PersonResponse result = personService.update(1L, request);
+
+        assertNotNull(result);
+        verify(personMapper).updateEntity(request, person);
     }
 
     @Test
     void update_shouldThrowWhenNotFound() {
-        PersonUpdateRequest request = new PersonUpdateRequest("Bob", "pass", Role.USER);
+        PersonUpdateRequest request = new PersonUpdateRequest("pass", Role.USER);
         when(personRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> personService.update(99L, request));
     }
 
     @Test
-    void update_shouldThrowOnNameConflict() {
-        Person person = createPerson(1L, "Alice");
-        PersonUpdateRequest request = new PersonUpdateRequest("Bob", "pass", Role.USER);
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
-        when(personRepository.existsByName("Bob")).thenReturn(true);
-
-        assertThrows(DuplicateResourceException.class, () -> personService.update(1L, request));
-    }
-
-    @Test
     void delete_shouldDeletePerson() {
         Person person = createPerson(1L, "Alice");
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(cardRepository.existsByPerson_Id(1L)).thenReturn(false);
 
         personService.delete(1L);
 
@@ -144,6 +173,16 @@ class PersonServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> personService.delete(99L));
     }
 
+    @Test
+    void delete_shouldThrowWhenPersonHasCards() {
+        Person person = createPerson(1L, "Alice");
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(cardRepository.existsByPerson_Id(1L)).thenReturn(true);
+
+        assertThrows(InvalidCardOperationException.class, () -> personService.delete(1L));
+        verify(personRepository, never()).delete(any());
+    }
+
     private Person createPerson(Long id, String name) {
         Person p = new Person();
         p.setId(id);
@@ -154,6 +193,6 @@ class PersonServiceTest {
     }
 
     private PersonResponse createPersonResponse(Long id, String name) {
-        return new PersonResponse(id, name, Role.USER, null, null);
+        return new PersonResponse(id, name, Role.USER);
     }
 }
