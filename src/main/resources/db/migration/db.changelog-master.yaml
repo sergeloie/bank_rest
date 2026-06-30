@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: db/migration/01-create-persons.yaml
+  - include:
+      file: db/migration/02-create-cards.yaml
+  - include:
+      file: db/migration/03-create-cardblockrequest.yaml
+  - include:
+      file: db/migration/04-create-admin.yaml
+

@@ -6,7 +6,7 @@ spring:
     active: dev
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/migration/db.changelog-master.yaml
     parameters:
       BANK_ADMIN_PASSWORD: ${BANK_ADMIN_PASSWORD}
 
