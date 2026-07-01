@@ -5,17 +5,21 @@ import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.service.CardBlockRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.bankcards.security.CardSecurity;
 
 import java.util.List;
 
@@ -26,6 +30,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = CardBlockRequestController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(roles = "ADMIN")
 class CardBlockRequestControllerTest {
 
     @Autowired
@@ -37,8 +43,14 @@ class CardBlockRequestControllerTest {
     @MockitoBean
     private CardBlockRequestService cardBlockRequestService;
 
+    @MockitoBean
+    private JwtAuthFilter jwtAuthFilter;
+
     @MockitoBean(name = "jpaMappingContext")
     private MappingContext<?, ?> jpaMappingContext;
+
+    @MockitoBean(name = "cardSecurity")
+    private CardSecurity cardSecurity;
 
     @Test
     void createBlockRequest_shouldReturn201() throws Exception {

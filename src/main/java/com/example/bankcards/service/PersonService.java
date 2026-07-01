@@ -12,6 +12,7 @@ import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final CardRepository cardRepository;
     private final PersonMapper personMapper;
+    private final PasswordEncoder passwordEncoder;
     private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
     private static final String PERSON_EXISTS = "Person already exists with name: %s";
 
@@ -41,6 +43,7 @@ public class PersonService {
     @Transactional
     public PersonResponse create(PersonCreateRequest request) {
         Person person = personMapper.toEntity(request);
+        person.setPassword(passwordEncoder.encode(request.password()));
         try {
             return personMapper.toPersonResponse(personRepository.save(person));
         } catch (DataIntegrityViolationException _) {

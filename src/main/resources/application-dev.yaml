@@ -21,3 +21,8 @@ card:
     secret: "1234567890123456"
   hash:
     secret: "1234567890123456"
+
+jwt:
+  secret: "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gc2lnbmluZyE="
+  access-expiration: 1800000
+  refresh-expiration: 604800000

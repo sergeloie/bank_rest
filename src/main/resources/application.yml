@@ -28,7 +28,8 @@ card:
 
 jwt:
   secret: ${BANK_JWT_SECRET}
-  expiration: 86400000
+  access-expiration: 1800000
+  refresh-expiration: 604800000
 
 #Что нужно сделать:
 #  - Указать настройки подключения к базе данных.
