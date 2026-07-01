@@ -36,7 +36,7 @@ public class CardController {
         return ResponseEntity.ok(cardService.getCardByIdUser(id));
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
     @PutMapping("/{id}/block-request")
     public ResponseEntity<CardBlockRequestResponse> requestBlock(
             @PathVariable Long id,

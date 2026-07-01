@@ -47,4 +47,8 @@ public class Person {
     @LastModifiedBy
     @Column(name = "modified_by")
     private Long modifiedBy;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

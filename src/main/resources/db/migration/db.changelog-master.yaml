@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/migration/05-add-audit-columns.yaml
   - include:
       file: db/migration/06-add-version-and-indexes.yaml
+  - include:
+      file: db/migration/07-add-missing-indexes-and-optimistic-locking.yaml

@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: '7'
+      author: developer
+      changes:
+        - createIndex:
+            tableName: card_block_request
+            columns:
+              - column:
+                  name: card_id
+            indexName: idx_card_block_request_card_id
+        - createIndex:
+            tableName: card_block_request
+            columns:
+              - column:
+                  name: person_id
+            indexName: idx_card_block_request_person_id
+        - addColumn:
+            tableName: person
+            columns:
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
