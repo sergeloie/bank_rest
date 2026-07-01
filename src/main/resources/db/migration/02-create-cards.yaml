@@ -48,6 +48,12 @@ databaseChangeLog:
                     nullable: false
                   name: card_hash
                   type: VARCHAR(255)
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: modified_by
+                  type: BIGINT
             tableName: card
         - addForeignKeyConstraint:
             baseColumnNames: person_id

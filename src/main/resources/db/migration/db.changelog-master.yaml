@@ -7,6 +7,3 @@ databaseChangeLog:
       file: db/migration/03-create-cardblockrequest.yaml
   - include:
       file: db/migration/04-create-admin.yaml
-  - include:
-      file: db/migration/05-add-audit-columns.yaml
-

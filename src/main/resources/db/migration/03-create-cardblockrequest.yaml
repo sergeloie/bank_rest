@@ -35,6 +35,12 @@ databaseChangeLog:
               - column:
                   name: last_modified_date
                   type: timestamp with time zone
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: modified_by
+                  type: BIGINT
             tableName: card_block_request
         - addForeignKeyConstraint:
             baseColumnNames: person_id
