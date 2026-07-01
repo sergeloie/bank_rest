@@ -150,11 +150,11 @@ The audit and refactoring steps are achievable entirely within the `bank_rest` c
 - Modify: `src/main/java/com/example/bankcards/service/CardService.java`
 - Modify: `src/main/java/com/example/bankcards/service/PersonService.java`
 
-- [ ] Implement proper URL-based and method-level security checks to block vertical escalation
-- [ ] Enforce owner-checks in service layer to prevent horizontal privilege escalation
+- [x] Implement proper URL-based and method-level security checks to block vertical escalation
+- [x] Enforce owner-checks in service layer to prevent horizontal privilege escalation
 - [x] Add pessimistic lock (`@Lock(LockModeType.PESSIMISTIC_WRITE)`) in `CardRepository` and sort locks in transfer to prevent race conditions and deadlocks
-- [ ] Stop ADMIN from accessing USER transfers, and ensure plain text card numbers are never sent to ADMIN/USER
-- [ ] Run security and transfer integration tests - must pass completely before proceeding
+- [x] Stop ADMIN from accessing USER transfers, and ensure plain text card numbers are never sent to ADMIN/USER
+- [x] Run security and transfer integration tests - must pass completely before proceeding
 
 #### Task 8: Fix IMPORTANT Database & Validation Issues
 > **JPA skill required (spring-data-jpa).**

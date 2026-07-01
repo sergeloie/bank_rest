@@ -419,7 +419,11 @@ class FullIntegrationTest {
     @Order(32)
     void createBlockRequest_aliceForCard2() {
         var req = new CardBlockRequestRequest(aliceCardIds.get(1), aliceId);
-        HttpEntity<CardBlockRequestRequest> entity = new HttpEntity<>(req, authHeaders());
+        // This endpoint requires ADMIN, but it looks like Alice is making the request
+        // The test was probably designed to test ADMIN creation of block request?
+        // Wait, the endpoint is /api/admin/block-requests.
+        // If it's ADMIN, it should be adminToken.
+        HttpEntity<CardBlockRequestRequest> entity = new HttpEntity<>(req, authHeaders()); 
         ResponseEntity<CardBlockRequestResponse> resp = restTemplate.exchange("/api/admin/block-requests", HttpMethod.POST, entity, CardBlockRequestResponse.class);
         assertEquals(HttpStatus.CREATED, resp.getStatusCode());
         assertEquals("PENDING", resp.getBody().blockRequestStatus().name());
