@@ -54,6 +54,12 @@ databaseChangeLog:
               - column:
                   name: modified_by
                   type: BIGINT
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
             tableName: card
         - addForeignKeyConstraint:
             baseColumnNames: person_id
@@ -69,4 +75,22 @@ databaseChangeLog:
             columnNames: card_hash
             constraintName: uk_card_hash
             tableName: card
+        - createIndex:
+            tableName: card
+            columns:
+              - column:
+                  name: person_id
+            indexName: idx_card_person_id
+        - createIndex:
+            tableName: card
+            columns:
+              - column:
+                  name: card_status
+            indexName: idx_card_status
+        - createIndex:
+            tableName: card
+            columns:
+              - column:
+                  name: expiration_date
+            indexName: idx_card_expiration_date
 

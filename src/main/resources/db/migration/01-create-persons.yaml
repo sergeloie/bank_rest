@@ -41,6 +41,12 @@ databaseChangeLog:
               - column:
                   name: modified_by
                   type: BIGINT
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
             tableName: person
         - addUniqueConstraint:
             columnNames: name

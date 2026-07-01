@@ -55,4 +55,16 @@ databaseChangeLog:
             referencedColumnNames: id
             referencedTableName: card
             onDelete: CASCADE
+        - createIndex:
+            tableName: card_block_request
+            columns:
+              - column:
+                  name: card_id
+            indexName: idx_card_block_request_card_id
+        - createIndex:
+            tableName: card_block_request
+            columns:
+              - column:
+                  name: person_id
+            indexName: idx_card_block_request_person_id
 
