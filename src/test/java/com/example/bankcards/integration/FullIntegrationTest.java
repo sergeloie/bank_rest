@@ -442,7 +442,7 @@ class FullIntegrationTest {
     void approveBlockRequest_shouldBlockCard() {
         HttpEntity<Void> h = new HttpEntity<>(authHeaders());
         ResponseEntity<String> listResp = restTemplate.exchange(
-                "/api/block-requests/pending?page=0&size=10", HttpMethod.GET, h, String.class);
+                "/api/admin/block-requests/pending?page=0&size=10", HttpMethod.GET, h, String.class);
         assertEquals(HttpStatus.OK, listResp.getStatusCode());
 
         try {
@@ -454,7 +454,7 @@ class FullIntegrationTest {
             Long requestId = content.get(0).get("id").asLong();
 
             ResponseEntity<CardBlockRequestAdminResponse> approveResp = restTemplate.exchange(
-                    "/api/block-requests/" + requestId + "/approve", HttpMethod.PATCH, h, CardBlockRequestAdminResponse.class);
+                    "/api/admin/block-requests/" + requestId + "/approve", HttpMethod.PATCH, h, CardBlockRequestAdminResponse.class);
             assertEquals(HttpStatus.OK, approveResp.getStatusCode());
             assertEquals("APPROVED", approveResp.getBody().blockRequestStatus().name());
 

@@ -76,13 +76,6 @@ class SecurityAuditTest {
     }
 
     @Test
-    void testH2ConsoleAccessible() {
-        ResponseEntity<String> resp = restTemplate.getForEntity("/h2-console/", String.class);
-        // Expecting it to be accessible (should fail if we want to fix it)
-        assertEquals(HttpStatus.OK, resp.getStatusCode());
-    }
-
-    @Test
     void testAliceBlockBobCard_shouldFailPrivilegeCheck() {
         // Alice should NOT be able to request block for Bob's card
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders(aliceToken));
