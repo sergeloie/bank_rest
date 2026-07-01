@@ -4,6 +4,7 @@ import com.example.bankcards.dto.card.*;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.security.CardSecurity;
 import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.service.TransferService;
@@ -12,14 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.example.bankcards.security.CardSecurity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +26,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -34,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = CardController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(roles = "ADMIN")
 class CardControllerTest {
 
     @Autowired
@@ -49,19 +48,19 @@ class CardControllerTest {
     @MockitoBean
     private TransferService transferService;
 
-    @MockitoBean
-    private JwtAuthFilter jwtAuthFilter;
-
     @MockitoBean(name = "jpaMappingContext")
     private MappingContext<?, ?> jpaMappingContext;
 
     @MockitoBean(name = "cardSecurity")
     private CardSecurity cardSecurity;
 
+    @MockitoBean
+    private JwtAuthFilter jwtAuthFilter;
+
     @Test
     void getCardsByPerson_shouldReturnPage() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10)))
+        CardAdminResponse dto = new CardAdminResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null, null, null);
+        when(cardService.getCardsByPersonAdmin(eq(1L), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
         mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
@@ -73,7 +72,7 @@ class CardControllerTest {
 
     @Test
     void getCardsByPerson_shouldReturnEmptyPageWhenNoCards() throws Exception {
-        when(cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10)))
+        when(cardService.getCardsByPersonAdmin(eq(1L), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
 
         mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
@@ -83,8 +82,8 @@ class CardControllerTest {
 
     @Test
     void getCardById_shouldReturnCard() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardService.getCardById(1L)).thenReturn(dto);
+        CardAdminResponse dto = new CardAdminResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null, null, null);
+        when(cardService.getCardByIdAdmin(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/cards/1"))
                 .andExpect(status().isOk())
@@ -94,7 +93,7 @@ class CardControllerTest {
 
     @Test
     void getCardById_shouldReturn404() throws Exception {
-        when(cardService.getCardById(99L)).thenThrow(new ResourceNotFoundException("Card not found"));
+        when(cardService.getCardByIdAdmin(99L)).thenThrow(new ResourceNotFoundException("Card not found"));
 
         mockMvc.perform(get("/api/cards/99"))
                 .andExpect(status().isNotFound());
@@ -103,7 +102,7 @@ class CardControllerTest {
     @Test
     void createCard_shouldReturn201() throws Exception {
         CardCreateRequest request = new CardCreateRequest(1L, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        CardAdminResponse dto = new CardAdminResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null, null, null);
         when(cardService.createCard(any(CardCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/cards")
@@ -138,7 +137,7 @@ class CardControllerTest {
 
     @Test
     void blockCard_shouldReturn200() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.BLOCKED, BigDecimal.valueOf(100));
+        CardAdminResponse dto = new CardAdminResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.BLOCKED, BigDecimal.valueOf(100), null, null, null, null);
         when(cardService.blockCard(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/cards/1/block"))
@@ -164,7 +163,7 @@ class CardControllerTest {
 
     @Test
     void activateCard_shouldReturn200() throws Exception {
-        CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        CardAdminResponse dto = new CardAdminResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100), null, null, null, null);
         when(cardService.activateCard(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/cards/1/activate"))

@@ -2,9 +2,14 @@ package com.example.bankcards.integration;
 
 import com.example.bankcards.dto.auth.AuthRequest;
 import com.example.bankcards.dto.auth.AuthResponse;
-import com.example.bankcards.dto.card.*;
+import com.example.bankcards.dto.card.CardAdminResponse;
+import com.example.bankcards.dto.card.CardCreateRequest;
+import com.example.bankcards.dto.card.CardTransferRequest;
+import com.example.bankcards.dto.card.CardTransferResponse;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
+import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.CardStatus;
@@ -71,6 +76,14 @@ class FullIntegrationTest {
         HttpHeaders h = new HttpHeaders();
         h.setContentType(MediaType.APPLICATION_JSON);
         return h;
+    }
+
+    private Long extractIdFromResponse(ResponseEntity<?> response) {
+        Object body = response.getBody();
+        if (body instanceof java.util.Map<?, ?> map) {
+            return ((Number) map.get("id")).longValue();
+        }
+        throw new RuntimeException("Cannot extract id from response: " + body);
     }
 
     // ==================== PHASE 1: Person CRUD ====================
@@ -174,7 +187,7 @@ class FullIntegrationTest {
         for (long bal : balances) {
             var req = new CardCreateRequest(aliceId, LocalDate.now().plusYears(1), BigDecimal.valueOf(bal));
             HttpEntity<CardCreateRequest> entity = new HttpEntity<>(req, authHeaders());
-            ResponseEntity<CardResponse> resp = restTemplate.exchange("/api/cards", HttpMethod.POST, entity, CardResponse.class);
+            ResponseEntity<CardAdminResponse> resp = restTemplate.exchange("/api/cards", HttpMethod.POST, entity, CardAdminResponse.class);
             assertEquals(HttpStatus.CREATED, resp.getStatusCode());
             aliceCardIds.add(resp.getBody().id());
         }
@@ -188,7 +201,7 @@ class FullIntegrationTest {
         for (long bal : balances) {
             var req = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(bal));
             HttpEntity<CardCreateRequest> entity = new HttpEntity<>(req, authHeaders());
-            ResponseEntity<CardResponse> resp = restTemplate.exchange("/api/cards", HttpMethod.POST, entity, CardResponse.class);
+            ResponseEntity<CardAdminResponse> resp = restTemplate.exchange("/api/cards", HttpMethod.POST, entity, CardAdminResponse.class);
             assertEquals(HttpStatus.CREATED, resp.getStatusCode());
             bobCardIds.add(resp.getBody().id());
         }
@@ -226,8 +239,8 @@ class FullIntegrationTest {
     @Order(16)
     void getCardById_shouldReturn200() {
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders());
-        ResponseEntity<CardResponse> resp = restTemplate.exchange(
-                "/api/cards/" + aliceCardIds.get(0), HttpMethod.GET, entity, CardResponse.class);
+        ResponseEntity<CardAdminResponse> resp = restTemplate.exchange(
+                "/api/cards/" + aliceCardIds.get(0), HttpMethod.GET, entity, CardAdminResponse.class);
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertNotNull(resp.getBody());
         assertTrue(resp.getBody().maskedNumber().startsWith("**** **** **** "));
@@ -240,8 +253,8 @@ class FullIntegrationTest {
     @Order(17)
     void blockCard_shouldReturn200() {
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders());
-        ResponseEntity<CardResponse> resp = restTemplate.exchange(
-                "/api/cards/" + aliceCardIds.get(0) + "/block", HttpMethod.PATCH, entity, CardResponse.class);
+        ResponseEntity<CardAdminResponse> resp = restTemplate.exchange(
+                "/api/cards/" + aliceCardIds.get(0) + "/block", HttpMethod.PATCH, entity, CardAdminResponse.class);
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(CardStatus.BLOCKED, resp.getBody().cardStatus());
     }
@@ -259,8 +272,8 @@ class FullIntegrationTest {
     @Order(19)
     void activateCard_shouldReturn200() {
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders());
-        ResponseEntity<CardResponse> resp = restTemplate.exchange(
-                "/api/cards/" + aliceCardIds.get(0) + "/activate", HttpMethod.PATCH, entity, CardResponse.class);
+        ResponseEntity<CardAdminResponse> resp = restTemplate.exchange(
+                "/api/cards/" + aliceCardIds.get(0) + "/activate", HttpMethod.PATCH, entity, CardAdminResponse.class);
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(CardStatus.ACTIVE, resp.getBody().cardStatus());
     }
@@ -421,13 +434,13 @@ class FullIntegrationTest {
 
             Long requestId = content.get(0).get("id").asLong();
 
-            ResponseEntity<CardBlockRequestResponse> approveResp = restTemplate.exchange(
-                    "/api/block-requests/" + requestId + "/approve", HttpMethod.PATCH, h, CardBlockRequestResponse.class);
+            ResponseEntity<CardBlockRequestAdminResponse> approveResp = restTemplate.exchange(
+                    "/api/block-requests/" + requestId + "/approve", HttpMethod.PATCH, h, CardBlockRequestAdminResponse.class);
             assertEquals(HttpStatus.OK, approveResp.getStatusCode());
             assertEquals("APPROVED", approveResp.getBody().blockRequestStatus().name());
 
-            ResponseEntity<CardResponse> cardResp = restTemplate.exchange(
-                    "/api/cards/" + aliceCardIds.get(1), HttpMethod.GET, h, CardResponse.class);
+            ResponseEntity<CardAdminResponse> cardResp = restTemplate.exchange(
+                    "/api/cards/" + aliceCardIds.get(1), HttpMethod.GET, h, CardAdminResponse.class);
             assertEquals(CardStatus.BLOCKED, cardResp.getBody().cardStatus());
 
             restTemplate.exchange("/api/cards/" + aliceCardIds.get(1) + "/activate", HttpMethod.PATCH, h, Void.class);
@@ -443,7 +456,18 @@ class FullIntegrationTest {
         HttpEntity<CardBlockRequestRequest> createEntity = new HttpEntity<>(createReq, authHeaders());
         ResponseEntity<CardBlockRequestResponse> createResp = restTemplate.exchange(
                 "/api/block-requests", HttpMethod.POST, createEntity, CardBlockRequestResponse.class);
-        Long requestId = createResp.getBody().id();
+        assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
+        // CardBlockRequestResponse doesn't have id, so query pending requests to find it
+        HttpEntity<Void> h2 = new HttpEntity<>(authHeaders());
+        ResponseEntity<String> pendingResp = restTemplate.exchange(
+                "/api/block-requests/pending?page=0&size=10", HttpMethod.GET, h2, String.class);
+        Long requestId;
+        try {
+            requestId = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readTree(pendingResp.getBody()).get("content").get(0).get("id").asLong();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         HttpEntity<Void> h = new HttpEntity<>(authHeaders());
         restTemplate.exchange("/api/block-requests/" + requestId + "/approve", HttpMethod.PATCH, h, Void.class);
@@ -462,16 +486,26 @@ class FullIntegrationTest {
         ResponseEntity<CardBlockRequestResponse> createResp = restTemplate.exchange(
                 "/api/block-requests", HttpMethod.POST, createEntity, CardBlockRequestResponse.class);
         assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
-        Long requestId = createResp.getBody().id();
+        // CardBlockRequestResponse doesn't have id, so query pending requests to find it
+        HttpEntity<Void> h2 = new HttpEntity<>(authHeaders());
+        ResponseEntity<String> pendingResp = restTemplate.exchange(
+                "/api/block-requests/pending?page=0&size=10", HttpMethod.GET, h2, String.class);
+        Long requestId;
+        try {
+            requestId = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readTree(pendingResp.getBody()).get("content").get(0).get("id").asLong();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         HttpEntity<Void> h = new HttpEntity<>(authHeaders());
-        ResponseEntity<CardBlockRequestResponse> rejectResp = restTemplate.exchange(
-                "/api/block-requests/" + requestId + "/reject", HttpMethod.PATCH, h, CardBlockRequestResponse.class);
+        ResponseEntity<CardBlockRequestAdminResponse> rejectResp = restTemplate.exchange(
+                "/api/block-requests/" + requestId + "/reject", HttpMethod.PATCH, h, CardBlockRequestAdminResponse.class);
         assertEquals(HttpStatus.OK, rejectResp.getStatusCode());
         assertEquals("REJECTED", rejectResp.getBody().blockRequestStatus().name());
 
-        ResponseEntity<CardResponse> cardResp = restTemplate.exchange(
-                "/api/cards/" + bobCardIds.get(0), HttpMethod.GET, h, CardResponse.class);
+        ResponseEntity<CardAdminResponse> cardResp = restTemplate.exchange(
+                "/api/cards/" + bobCardIds.get(0), HttpMethod.GET, h, CardAdminResponse.class);
         assertEquals(CardStatus.ACTIVE, cardResp.getBody().cardStatus());
     }
 
@@ -507,7 +541,7 @@ class FullIntegrationTest {
         assertEquals(HttpStatus.NO_CONTENT, resp.getStatusCode());
         aliceCardIds.remove(0);
 
-        ResponseEntity<CardResponse> getResp = restTemplate.exchange("/api/cards/" + cardToDelete, HttpMethod.GET, h, CardResponse.class);
+        ResponseEntity<CardAdminResponse> getResp = restTemplate.exchange("/api/cards/" + cardToDelete, HttpMethod.GET, h, CardAdminResponse.class);
         assertEquals(HttpStatus.NOT_FOUND, getResp.getStatusCode());
     }
 

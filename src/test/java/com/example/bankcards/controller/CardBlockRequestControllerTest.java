@@ -1,10 +1,12 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.security.CardSecurity;
 import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.service.CardBlockRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,14 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.example.bankcards.security.CardSecurity;
 
 import java.util.List;
 
@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = CardBlockRequestController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(roles = "ADMIN")
 class CardBlockRequestControllerTest {
 
     @Autowired
@@ -43,26 +42,27 @@ class CardBlockRequestControllerTest {
     @MockitoBean
     private CardBlockRequestService cardBlockRequestService;
 
-    @MockitoBean
-    private JwtAuthFilter jwtAuthFilter;
-
     @MockitoBean(name = "jpaMappingContext")
     private MappingContext<?, ?> jpaMappingContext;
 
     @MockitoBean(name = "cardSecurity")
     private CardSecurity cardSecurity;
 
+    @MockitoBean
+    private JwtAuthFilter jwtAuthFilter;
+
     @Test
     void createBlockRequest_shouldReturn201() throws Exception {
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING);
+        CardBlockRequestResponse dto = new CardBlockRequestResponse("**** **** **** 7890", BlockRequestStatus.PENDING);
         when(cardBlockRequestService.createRequest(any(CardBlockRequestRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/block-requests")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.blockRequestStatus").value("PENDING"));
+                .andExpect(jsonPath("$.blockRequestStatus").value("PENDING"))
+                .andExpect(jsonPath("$.maskedCardNumber").value("**** **** **** 7890"));
     }
 
     @Test
@@ -77,7 +77,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void getPendingRequests_shouldReturnPage() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.PENDING);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.PENDING, null, null, null, null);
         when(cardBlockRequestService.getPendingRequests(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -89,7 +89,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void approveRequest_shouldReturn200() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.APPROVED);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.APPROVED, null, null, null, null);
         when(cardBlockRequestService.approveRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/approve"))
@@ -117,7 +117,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void rejectRequest_shouldReturn200() throws Exception {
-        CardBlockRequestResponse dto = new CardBlockRequestResponse(1L, 1L, 1L, BlockRequestStatus.REJECTED);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.REJECTED, null, null, null, null);
         when(cardBlockRequestService.rejectRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/block-requests/1/reject"))

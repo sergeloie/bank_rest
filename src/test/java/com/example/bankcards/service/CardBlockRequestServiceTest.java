@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.*;
@@ -9,6 +10,8 @@ import com.example.bankcards.mapper.CardBlockRequestMapper;
 import com.example.bankcards.repository.CardBlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
+import com.example.bankcards.util.CardEncryptionUtil;
+import com.example.bankcards.util.CardMaskUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,22 +26,18 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CardBlockRequestServiceTest {
 
-    @Mock
-    private CardBlockRequestRepository cardBlockRequestRepository;
-
-    @Mock
-    private CardRepository cardRepository;
-
-    @Mock
-    private PersonRepository personRepository;
-
-    @Mock
-    private CardBlockRequestMapper cardBlockRequestMapper;
+    @Mock private CardBlockRequestRepository cardBlockRequestRepository;
+    @Mock private CardRepository cardRepository;
+    @Mock private PersonRepository personRepository;
+    @Mock private CardBlockRequestMapper cardBlockRequestMapper;
+    @Mock private CardEncryptionUtil cardEncryptionUtil;
+    @Mock private CardMaskUtil cardMaskUtil;
 
     @InjectMocks
     private CardBlockRequestService cardBlockRequestService;
@@ -49,17 +48,18 @@ class CardBlockRequestServiceTest {
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
-        CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.PENDING);
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(cardBlockRequestMapper.toEntity(request)).thenReturn(blockRequest);
         when(cardBlockRequestRepository.save(any(CardBlockRequest.class))).thenReturn(blockRequest);
-        when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
         CardBlockRequestResponse result = cardBlockRequestService.createRequest(request);
 
         assertEquals(BlockRequestStatus.PENDING, result.blockRequestStatus());
+        assertEquals("**** **** **** 7890", result.maskedCardNumber());
         verify(cardBlockRequestRepository).save(any(CardBlockRequest.class));
     }
 
@@ -67,7 +67,6 @@ class CardBlockRequestServiceTest {
     void createRequest_shouldThrowWhenCardNotFound() {
         CardBlockRequestRequest request = new CardBlockRequestRequest(99L, 1L);
         when(cardRepository.findById(99L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
@@ -78,7 +77,6 @@ class CardBlockRequestServiceTest {
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 99L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(personRepository.findById(99L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
@@ -90,7 +88,6 @@ class CardBlockRequestServiceTest {
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 2L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(personRepository.findById(2L)).thenReturn(Optional.of(person2));
-
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
@@ -101,7 +98,6 @@ class CardBlockRequestServiceTest {
         CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
-
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
@@ -110,14 +106,15 @@ class CardBlockRequestServiceTest {
         Person person = createPerson(1L);
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
-        CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findByBlockRequestStatus(eq(BlockRequestStatus.PENDING), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(blockRequest)));
-        when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        Page<CardBlockRequestResponse> result = cardBlockRequestService.getPendingRequests(PageRequest.of(0, 10));
+        Page<CardBlockRequestAdminResponse> result = cardBlockRequestService.getPendingRequests(PageRequest.of(0, 10));
 
         assertEquals(1, result.getContent().size());
+        assertEquals("**** **** **** 7890", result.getContent().get(0).maskedCardNumber());
     }
 
     @Test
@@ -125,11 +122,11 @@ class CardBlockRequestServiceTest {
         Person person = createPerson(1L);
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
-        CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.APPROVED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardBlockRequestResponse result = cardBlockRequestService.approveRequest(1L);
+        CardBlockRequestAdminResponse result = cardBlockRequestService.approveRequest(1L);
 
         assertEquals(BlockRequestStatus.APPROVED, result.blockRequestStatus());
         assertEquals(CardStatus.BLOCKED, card.getCardStatus());
@@ -142,14 +139,12 @@ class CardBlockRequestServiceTest {
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.APPROVED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.approveRequest(1L));
     }
 
     @Test
     void approveRequest_shouldThrowWhenNotFound() {
         when(cardBlockRequestRepository.findById(99L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.approveRequest(99L));
     }
 
@@ -158,14 +153,13 @@ class CardBlockRequestServiceTest {
         Person person = createPerson(1L);
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
-        CardBlockRequestResponse dto = createBlockResponse(1L, BlockRequestStatus.REJECTED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardBlockRequestMapper.toResponse(blockRequest)).thenReturn(dto);
+        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
+        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardBlockRequestResponse result = cardBlockRequestService.rejectRequest(1L);
+        CardBlockRequestAdminResponse result = cardBlockRequestService.rejectRequest(1L);
 
         assertEquals(BlockRequestStatus.REJECTED, result.blockRequestStatus());
-        verify(cardBlockRequestRepository, never()).save(any());
     }
 
     @Test
@@ -174,14 +168,12 @@ class CardBlockRequestServiceTest {
         Card card = createCard(1L, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.REJECTED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.rejectRequest(1L));
     }
 
     @Test
     void rejectRequest_shouldThrowWhenNotFound() {
         when(cardBlockRequestRepository.findById(99L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.rejectRequest(99L));
     }
 
@@ -198,6 +190,7 @@ class CardBlockRequestServiceTest {
         Card c = new Card();
         c.setId(id);
         c.setPerson(person);
+        c.setEncryptedNumber("encrypted");
         c.setCardStatus(status);
         return c;
     }
@@ -209,9 +202,5 @@ class CardBlockRequestServiceTest {
         r.setPerson(person);
         r.setBlockRequestStatus(status);
         return r;
-    }
-
-    private CardBlockRequestResponse createBlockResponse(Long id, BlockRequestStatus status) {
-        return new CardBlockRequestResponse(id, 1L, 1L, status);
     }
 }

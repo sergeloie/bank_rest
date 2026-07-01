@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
@@ -13,6 +14,8 @@ import com.example.bankcards.mapper.CardBlockRequestMapper;
 import com.example.bankcards.repository.CardBlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
+import com.example.bankcards.util.CardEncryptionUtil;
+import com.example.bankcards.util.CardMaskUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +29,8 @@ public class CardBlockRequestService {
     private final CardRepository cardRepository;
     private final PersonRepository personRepository;
     private final CardBlockRequestMapper cardBlockRequestMapper;
+    private final CardEncryptionUtil cardEncryptionUtil;
+    private final CardMaskUtil cardMaskUtil;
 
     @Transactional
     public CardBlockRequestResponse createRequest(CardBlockRequestRequest request) {
@@ -48,17 +53,19 @@ public class CardBlockRequestService {
         blockRequest.setPerson(person);
         blockRequest.setBlockRequestStatus(BlockRequestStatus.PENDING);
 
-        return cardBlockRequestMapper.toResponse(cardBlockRequestRepository.save(blockRequest));
+        CardBlockRequest saved = cardBlockRequestRepository.save(blockRequest);
+        String maskedCardNumber = computeMaskedNumber(card);
+        return new CardBlockRequestResponse(maskedCardNumber, saved.getBlockRequestStatus());
     }
 
     @Transactional(readOnly = true)
-    public Page<CardBlockRequestResponse> getPendingRequests(Pageable pageable) {
+    public Page<CardBlockRequestAdminResponse> getPendingRequests(Pageable pageable) {
         return cardBlockRequestRepository.findByBlockRequestStatus(BlockRequestStatus.PENDING, pageable)
-                .map(cardBlockRequestMapper::toResponse);
+                .map(this::toAdminResponse);
     }
 
     @Transactional
-    public CardBlockRequestResponse approveRequest(Long requestId) {
+    public CardBlockRequestAdminResponse approveRequest(Long requestId) {
         CardBlockRequest blockRequest = cardBlockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Block request not found with id: " + requestId));
 
@@ -69,11 +76,11 @@ public class CardBlockRequestService {
         blockRequest.setBlockRequestStatus(BlockRequestStatus.APPROVED);
         blockRequest.getCard().setCardStatus(CardStatus.BLOCKED);
 
-        return cardBlockRequestMapper.toResponse(blockRequest);
+        return toAdminResponse(blockRequest);
     }
 
     @Transactional
-    public CardBlockRequestResponse rejectRequest(Long requestId) {
+    public CardBlockRequestAdminResponse rejectRequest(Long requestId) {
         CardBlockRequest blockRequest = cardBlockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Block request not found with id: " + requestId));
 
@@ -83,6 +90,26 @@ public class CardBlockRequestService {
 
         blockRequest.setBlockRequestStatus(BlockRequestStatus.REJECTED);
 
-        return cardBlockRequestMapper.toResponse(blockRequest);
+        return toAdminResponse(blockRequest);
+    }
+
+    private String computeMaskedNumber(Card card) {
+        String plainNumber = cardEncryptionUtil.decrypt(card.getEncryptedNumber());
+        return cardMaskUtil.mask(plainNumber);
+    }
+
+    private CardBlockRequestAdminResponse toAdminResponse(CardBlockRequest entity) {
+        String maskedCardNumber = computeMaskedNumber(entity.getCard());
+        return new CardBlockRequestAdminResponse(
+                entity.getId(),
+                entity.getCard().getId(),
+                maskedCardNumber,
+                entity.getPerson().getId(),
+                entity.getBlockRequestStatus(),
+                entity.getCreatedDate(),
+                entity.getLastModifiedDate(),
+                entity.getCreatedBy(),
+                entity.getModifiedBy()
+        );
     }
 }

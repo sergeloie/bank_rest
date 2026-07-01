@@ -1,5 +1,6 @@
 package com.example.bankcards.mapper;
 
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.CardBlockRequest;
@@ -15,7 +16,9 @@ public interface CardBlockRequestMapper {
     @Mapping(source = "personId", target = "person.id")
     CardBlockRequest toEntity(CardBlockRequestRequest request);
 
+    CardBlockRequestResponse toResponse(CardBlockRequest entity);
+
     @Mapping(source = "card.id", target = "cardId")
     @Mapping(source = "person.id", target = "personId")
-    CardBlockRequestResponse toResponse(CardBlockRequest entity);
+    CardBlockRequestAdminResponse toAdminResponse(CardBlockRequest entity);
 }

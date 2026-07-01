@@ -1,5 +1,6 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.service.CardBlockRequestService;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,19 +27,19 @@ public class CardBlockRequestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/pending")
-    public ResponseEntity<Page<CardBlockRequestResponse>> getPendingRequests(Pageable pageable) {
+    public ResponseEntity<Page<CardBlockRequestAdminResponse>> getPendingRequests(Pageable pageable) {
         return ResponseEntity.ok(cardBlockRequestService.getPendingRequests(pageable));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<CardBlockRequestResponse> approveRequest(@PathVariable Long id) {
+    public ResponseEntity<CardBlockRequestAdminResponse> approveRequest(@PathVariable Long id) {
         return ResponseEntity.ok(cardBlockRequestService.approveRequest(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<CardBlockRequestResponse> rejectRequest(@PathVariable Long id) {
+    public ResponseEntity<CardBlockRequestAdminResponse> rejectRequest(@PathVariable Long id) {
         return ResponseEntity.ok(cardBlockRequestService.rejectRequest(id));
     }
 }

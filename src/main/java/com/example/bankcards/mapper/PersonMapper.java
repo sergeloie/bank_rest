@@ -1,11 +1,13 @@
 package com.example.bankcards.mapper;
 
+import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
 import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Person;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -16,6 +18,8 @@ public interface PersonMapper {
     Person toEntity(PersonCreateRequest personCreateRequest);
 
     PersonResponse toPersonResponse(Person person);
+
+    PersonAdminResponse toAdminResponse(Person person);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(PersonUpdateRequest request, @MappingTarget Person person);

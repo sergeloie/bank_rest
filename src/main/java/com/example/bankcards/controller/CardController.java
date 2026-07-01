@@ -1,5 +1,6 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.card.CardAdminResponse;
 import com.example.bankcards.dto.card.CardCreateRequest;
 import com.example.bankcards.dto.card.CardResponse;
 import com.example.bankcards.dto.card.CardTransferRequest;
@@ -13,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,34 +25,34 @@ public class CardController {
 
     @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwnerByPersonId(#personId, authentication)")
     @GetMapping("/person/{personId}")
-    public ResponseEntity<Page<CardResponse>> getCardsByPerson(
+    public ResponseEntity<Page<CardAdminResponse>> getCardsByPerson(
             @PathVariable Long personId,
             @RequestParam(required = false) String status,
             Pageable pageable) {
-        return ResponseEntity.ok(cardService.getCardsByPerson(personId, status, pageable));
+        return ResponseEntity.ok(cardService.getCardsByPersonAdmin(personId, status, pageable));
     }
 
     @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
-    public ResponseEntity<CardResponse> getCardById(@PathVariable Long id) {
-        return ResponseEntity.ok(cardService.getCardById(id));
+    public ResponseEntity<CardAdminResponse> getCardById(@PathVariable Long id) {
+        return ResponseEntity.ok(cardService.getCardByIdAdmin(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<CardResponse> createCard(@Valid @RequestBody CardCreateRequest request) {
+    public ResponseEntity<CardAdminResponse> createCard(@Valid @RequestBody CardCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/block")
-    public ResponseEntity<CardResponse> blockCard(@PathVariable Long id) {
+    public ResponseEntity<CardAdminResponse> blockCard(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.blockCard(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<CardResponse> activateCard(@PathVariable Long id) {
+    public ResponseEntity<CardAdminResponse> activateCard(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.activateCard(id));
     }
 

@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.context.MappingContext;
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = PersonController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(roles = "ADMIN")
 class PersonControllerTest {
 
     @Autowired
@@ -53,7 +51,7 @@ class PersonControllerTest {
 
     @Test
     void getAllPersons_shouldReturnPage() throws Exception {
-        PersonResponse dto = new PersonResponse("Alice", Role.USER);
+        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
         when(personService.getAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -65,7 +63,7 @@ class PersonControllerTest {
 
     @Test
     void getPersonById_shouldReturnPerson() throws Exception {
-        PersonResponse dto = new PersonResponse("Alice", Role.USER);
+        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
         when(personService.getById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/persons/1"))
@@ -84,7 +82,7 @@ class PersonControllerTest {
     @Test
     void createPerson_shouldReturn201() throws Exception {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        PersonResponse dto = new PersonResponse("Alice", Role.USER);
+        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/persons")
@@ -120,7 +118,7 @@ class PersonControllerTest {
     @Test
     void updatePerson_shouldReturn200() throws Exception {
         PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
-        PersonResponse dto = new PersonResponse("Alice", Role.ADMIN);
+        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.ADMIN, null, null, null, null);
         when(personService.update(1L, request)).thenReturn(dto);
 
         mockMvc.perform(put("/api/persons/1")

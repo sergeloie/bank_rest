@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
 import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
@@ -29,37 +30,37 @@ public class PersonService {
     private static final String PERSON_EXISTS = "Person already exists with name: %s";
 
     @Transactional(readOnly = true)
-    public Page<PersonResponse> getAll(Pageable pageable) {
-        return personRepository.findAll(pageable).map(personMapper::toPersonResponse);
+    public Page<PersonAdminResponse> getAll(Pageable pageable) {
+        return personRepository.findAll(pageable).map(personMapper::toAdminResponse);
     }
 
     @Transactional(readOnly = true)
-    public PersonResponse getById(Long id) {
+    public PersonAdminResponse getById(Long id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
-        return personMapper.toPersonResponse(person);
+        return personMapper.toAdminResponse(person);
     }
 
     @Transactional
-    public PersonResponse create(PersonCreateRequest request) {
+    public PersonAdminResponse create(PersonCreateRequest request) {
         Person person = personMapper.toEntity(request);
         person.setPassword(passwordEncoder.encode(request.password()));
         try {
-            return personMapper.toPersonResponse(personRepository.save(person));
+            return personMapper.toAdminResponse(personRepository.save(person));
         } catch (DataIntegrityViolationException _) {
             throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
     }
 
     @Transactional
-    public PersonResponse update(Long id, PersonUpdateRequest request) {
+    public PersonAdminResponse update(Long id, PersonUpdateRequest request) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         personMapper.updateEntity(request, person);
         if (request.password() != null) {
             person.setPassword(passwordEncoder.encode(request.password()));
         }
-        return personMapper.toPersonResponse(personRepository.save(person));
+        return personMapper.toAdminResponse(personRepository.save(person));
     }
 
     @Transactional

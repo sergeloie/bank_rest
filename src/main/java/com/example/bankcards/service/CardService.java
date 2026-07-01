@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.card.CardAdminResponse;
 import com.example.bankcards.dto.card.CardCreateRequest;
 import com.example.bankcards.dto.card.CardResponse;
 import com.example.bankcards.entity.Card;
@@ -37,26 +38,33 @@ public class CardService {
     private static final String CARD_NOT_FOUND = "Card not found with id: %d";
 
     @Transactional(readOnly = true)
-    public Page<CardResponse> getCardsByPerson(Long personId, String status, Pageable pageable) {
-        Page<Card> cards;
-        if (StringUtils.hasText(status)) {
-            CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
-            cards = cardRepository.findByPerson_IdAndCardStatus(personId, cardStatus, pageable);
-        } else {
-            cards = cardRepository.findByPerson_Id(personId, pageable);
-        }
-        return cards.map(card -> enrichWithMaskedNumber(cardMapper.toCardResponse(card), card));
+    public Page<CardAdminResponse> getCardsByPersonAdmin(Long personId, String status, Pageable pageable) {
+        return getCardsByPersonInternal(personId, status, pageable)
+                .map(this::toAdminResponse);
     }
 
     @Transactional(readOnly = true)
-    public CardResponse getCardById(Long id) {
+    public Page<CardResponse> getCardsByPersonUser(Long personId, String status, Pageable pageable) {
+        return getCardsByPersonInternal(personId, status, pageable)
+                .map(this::toUserResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public CardAdminResponse getCardByIdAdmin(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
+        return toAdminResponse(card);
+    }
+
+    @Transactional(readOnly = true)
+    public CardResponse getCardByIdUser(Long id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
+        return toUserResponse(card);
     }
 
     @Transactional
-    public CardResponse createCard(CardCreateRequest request) {
+    public CardAdminResponse createCard(CardCreateRequest request) {
         Person person = personRepository.findById(request.personId())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, request.personId())));
 
@@ -77,11 +85,11 @@ public class CardService {
         card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
 
         Card saved = cardRepository.save(card);
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(saved), saved);
+        return toAdminResponse(saved);
     }
 
     @Transactional
-    public CardResponse blockCard(Long id) {
+    public CardAdminResponse blockCard(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
@@ -90,11 +98,11 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.BLOCKED);
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
+        return toAdminResponse(card);
     }
 
     @Transactional
-    public CardResponse activateCard(Long id) {
+    public CardAdminResponse activateCard(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
@@ -103,7 +111,7 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.ACTIVE);
-        return enrichWithMaskedNumber(cardMapper.toCardResponse(card), card);
+        return toAdminResponse(card);
     }
 
     @Transactional
@@ -113,17 +121,43 @@ public class CardService {
         cardRepository.delete(card);
     }
 
-    private CardResponse enrichWithMaskedNumber(CardResponse response, Card card) {
+    private Page<Card> getCardsByPersonInternal(Long personId, String status, Pageable pageable) {
+        if (StringUtils.hasText(status)) {
+            CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
+            return cardRepository.findByPerson_IdAndCardStatus(personId, cardStatus, pageable);
+        }
+        return cardRepository.findByPerson_Id(personId, pageable);
+    }
+
+    private String computeMaskedNumber(Card card) {
         String plainNumber = cardEncryptionUtil.decrypt(card.getEncryptedNumber());
-        String masked = cardMaskUtil.mask(plainNumber);
-        return new CardResponse(
-                response.id(),
-                response.personId(),
-                response.personName(),
+        return cardMaskUtil.mask(plainNumber);
+    }
+
+    private CardAdminResponse toAdminResponse(Card card) {
+        String masked = computeMaskedNumber(card);
+        return new CardAdminResponse(
+                card.getId(),
+                card.getPerson().getId(),
+                card.getPerson().getName(),
                 masked,
-                response.expirationDate(),
-                response.cardStatus(),
-                response.balance()
+                card.getExpirationDate(),
+                card.getCardStatus(),
+                card.getBalance(),
+                card.getCreatedDate(),
+                card.getLastModifiedDate(),
+                card.getCreatedBy(),
+                card.getModifiedBy()
+        );
+    }
+
+    private CardResponse toUserResponse(Card card) {
+        String masked = computeMaskedNumber(card);
+        return new CardResponse(
+                masked,
+                card.getExpirationDate(),
+                card.getCardStatus(),
+                card.getBalance()
         );
     }
 }
