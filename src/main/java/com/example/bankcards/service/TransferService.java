@@ -18,15 +18,21 @@ public class TransferService {
 
     @Transactional
     public CardTransferResponse transfer(CardTransferRequest request) {
-        Card fromCard = cardRepository.findById(request.fromCardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Source card not found with id: " + request.fromCardId()));
-
-        Card toCard = cardRepository.findById(request.toCardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Target card not found with id: " + request.toCardId()));
-
-        if (fromCard.getId().equals(toCard.getId())) {
+        if (request.fromCardId().equals(request.toCardId())) {
             throw new InvalidCardOperationException("Cannot transfer to the same card");
         }
+
+        // Deterministic lock order: lock lower ID first to prevent deadlock
+        Long firstId = Math.min(request.fromCardId(), request.toCardId());
+        Long secondId = Math.max(request.fromCardId(), request.toCardId());
+
+        Card firstCard = cardRepository.findByIdForUpdate(firstId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + firstId));
+        Card secondCard = cardRepository.findByIdForUpdate(secondId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + secondId));
+
+        Card fromCard = firstCard.getId().equals(request.fromCardId()) ? firstCard : secondCard;
+        Card toCard = firstCard.getId().equals(request.toCardId()) ? firstCard : secondCard;
 
         if (!fromCard.getPerson().getId().equals(toCard.getPerson().getId())) {
             throw new InvalidCardOperationException("Can only transfer between own cards");

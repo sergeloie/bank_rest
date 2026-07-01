@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +37,8 @@ class TransferServiceTest {
         Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
         CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(200), 1L);
 
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
         CardTransferResponse result = transferService.transfer(request);
 
@@ -49,32 +48,37 @@ class TransferServiceTest {
     }
 
     @Test
-    void transfer_shouldThrowWhenSourceCardNotFound() {
-        CardTransferRequest request = new CardTransferRequest(99L, 2L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
+    void transfer_shouldThrowWhenSameCard() {
+        Person person = createPerson(1L);
+        Card card = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        CardTransferRequest request = new CardTransferRequest(1L, 1L, BigDecimal.valueOf(100), 1L);
 
+        assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
+        verifyNoInteractions(cardRepository);
+    }
+
+    @Test
+    void transfer_shouldThrowWhenSourceCardNotFound() {
+        // fromCardId=99, toCardId=2 → locks 2 first, then 99
+        Person person = createPerson(1L);
+        Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+
+        CardTransferRequest request = new CardTransferRequest(99L, 2L, BigDecimal.valueOf(100), 1L);
         assertThrows(ResourceNotFoundException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenTargetCardNotFound() {
+        // fromCardId=1, toCardId=99 → locks 1 first, then 99
         Person person = createPerson(1L);
         Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+
         CardTransferRequest request = new CardTransferRequest(1L, 99L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> transferService.transfer(request));
-    }
-
-    @Test
-    void transfer_shouldThrowWhenSameCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        CardTransferRequest request = new CardTransferRequest(1L, 1L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-
-        assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
     @Test
@@ -83,10 +87,10 @@ class TransferServiceTest {
         Person person2 = createPerson(2L);
         Card fromCard = createCard(1L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
         Card toCard = createCard(2L, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
+        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
@@ -96,10 +100,10 @@ class TransferServiceTest {
         Person person2 = createPerson(2L);
         Card fromCard = createCard(1L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
         Card toCard = createCard(2L, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 99L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
+        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 99L);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
@@ -108,10 +112,10 @@ class TransferServiceTest {
         Person person = createPerson(1L);
         Card fromCard = createCard(1L, person, CardStatus.BLOCKED, BigDecimal.valueOf(500));
         Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
+        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
@@ -120,10 +124,10 @@ class TransferServiceTest {
         Person person = createPerson(1L);
         Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
         Card toCard = createCard(2L, person, CardStatus.BLOCKED, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
+        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
@@ -132,10 +136,10 @@ class TransferServiceTest {
         Person person = createPerson(1L);
         Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(50));
         Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
 
+        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 

@@ -44,6 +44,23 @@ public class CardService {
     }
 
     @Transactional(readOnly = true)
+    public Page<CardAdminResponse> getAllCardsAdmin(Long personId, String status, Pageable pageable) {
+        Page<Card> cards;
+        if (personId != null && StringUtils.hasText(status)) {
+            CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
+            cards = cardRepository.findByPerson_IdAndCardStatus(personId, cardStatus, pageable);
+        } else if (personId != null) {
+            cards = cardRepository.findByPerson_Id(personId, pageable);
+        } else if (StringUtils.hasText(status)) {
+            CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
+            cards = cardRepository.findByCardStatus(cardStatus, pageable);
+        } else {
+            cards = cardRepository.findAll(pageable);
+        }
+        return cards.map(this::toAdminResponse);
+    }
+
+    @Transactional(readOnly = true)
     public Page<CardResponse> getCardsByPersonUser(Long personId, String status, Pageable pageable) {
         return getCardsByPersonInternal(personId, status, pageable)
                 .map(this::toUserResponse);

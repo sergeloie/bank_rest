@@ -1,8 +1,6 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
-import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
 import com.example.bankcards.entity.BlockRequestStatus;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
@@ -52,36 +50,12 @@ class CardBlockRequestControllerTest {
     private JwtAuthFilter jwtAuthFilter;
 
     @Test
-    void createBlockRequest_shouldReturn201() throws Exception {
-        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
-        CardBlockRequestResponse dto = new CardBlockRequestResponse("**** **** **** 7890", BlockRequestStatus.PENDING);
-        when(cardBlockRequestService.createRequest(any(CardBlockRequestRequest.class))).thenReturn(dto);
-
-        mockMvc.perform(post("/api/block-requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.blockRequestStatus").value("PENDING"))
-                .andExpect(jsonPath("$.maskedCardNumber").value("**** **** **** 7890"));
-    }
-
-    @Test
-    void createBlockRequest_shouldReturn400OnValidation() throws Exception {
-        CardBlockRequestRequest request = new CardBlockRequestRequest(null, null);
-
-        mockMvc.perform(post("/api/block-requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void getPendingRequests_shouldReturnPage() throws Exception {
         CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.PENDING, null, null, null, null);
         when(cardBlockRequestService.getPendingRequests(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
-        mockMvc.perform(get("/api/block-requests/pending").param("page", "0").param("size", "10"))
+        mockMvc.perform(get("/api/admin/block-requests/pending").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].blockRequestStatus").value("PENDING"));
@@ -92,7 +66,7 @@ class CardBlockRequestControllerTest {
         CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.APPROVED, null, null, null, null);
         when(cardBlockRequestService.approveRequest(1L)).thenReturn(dto);
 
-        mockMvc.perform(patch("/api/block-requests/1/approve"))
+        mockMvc.perform(patch("/api/admin/block-requests/1/approve"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blockRequestStatus").value("APPROVED"));
     }
@@ -102,7 +76,7 @@ class CardBlockRequestControllerTest {
         when(cardBlockRequestService.approveRequest(1L))
                 .thenThrow(new InvalidCardOperationException("Only pending requests can be approved"));
 
-        mockMvc.perform(patch("/api/block-requests/1/approve"))
+        mockMvc.perform(patch("/api/admin/block-requests/1/approve"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -111,7 +85,7 @@ class CardBlockRequestControllerTest {
         when(cardBlockRequestService.approveRequest(99L))
                 .thenThrow(new ResourceNotFoundException("Block request not found"));
 
-        mockMvc.perform(patch("/api/block-requests/99/approve"))
+        mockMvc.perform(patch("/api/admin/block-requests/99/approve"))
                 .andExpect(status().isNotFound());
     }
 
@@ -120,7 +94,7 @@ class CardBlockRequestControllerTest {
         CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.REJECTED, null, null, null, null);
         when(cardBlockRequestService.rejectRequest(1L)).thenReturn(dto);
 
-        mockMvc.perform(patch("/api/block-requests/1/reject"))
+        mockMvc.perform(patch("/api/admin/block-requests/1/reject"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blockRequestStatus").value("REJECTED"));
     }
@@ -130,7 +104,7 @@ class CardBlockRequestControllerTest {
         when(cardBlockRequestService.rejectRequest(1L))
                 .thenThrow(new InvalidCardOperationException("Only pending requests can be rejected"));
 
-        mockMvc.perform(patch("/api/block-requests/1/reject"))
+        mockMvc.perform(patch("/api/admin/block-requests/1/reject"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -139,7 +113,7 @@ class CardBlockRequestControllerTest {
         when(cardBlockRequestService.rejectRequest(99L))
                 .thenThrow(new ResourceNotFoundException("Block request not found"));
 
-        mockMvc.perform(patch("/api/block-requests/99/reject"))
+        mockMvc.perform(patch("/api/admin/block-requests/99/reject"))
                 .andExpect(status().isNotFound());
     }
 }

@@ -6,8 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 
+import jakarta.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
     @EntityGraph(attributePaths = {"person"})
@@ -21,4 +25,11 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     boolean existsByCardHash(String cardHash);
 
     boolean existsByPerson_Id(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM Card c WHERE c.id = :id")
+    Optional<Card> findByIdForUpdate(Long id);
+
+    @EntityGraph(attributePaths = {"person"})
+    Page<Card> findByCardStatus(CardStatus status, Pageable pageable);
 }

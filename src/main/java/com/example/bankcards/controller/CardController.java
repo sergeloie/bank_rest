@@ -1,19 +1,17 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.card.CardAdminResponse;
-import com.example.bankcards.dto.card.CardCreateRequest;
 import com.example.bankcards.dto.card.CardResponse;
-import com.example.bankcards.dto.card.CardTransferRequest;
-import com.example.bankcards.dto.card.CardTransferResponse;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
+import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
+import com.example.bankcards.entity.Person;
+import com.example.bankcards.service.CardBlockRequestService;
 import com.example.bankcards.service.CardService;
-import com.example.bankcards.service.TransferService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,51 +19,30 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CardController {
     private final CardService cardService;
-    private final TransferService transferService;
+    private final CardBlockRequestService cardBlockRequestService;
 
-    @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwnerByPersonId(#personId, authentication)")
+    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwnerByPersonId(#personId, authentication)")
     @GetMapping("/person/{personId}")
-    public ResponseEntity<Page<CardAdminResponse>> getCardsByPerson(
+    public ResponseEntity<Page<CardResponse>> getMyCards(
             @PathVariable Long personId,
             @RequestParam(required = false) String status,
             Pageable pageable) {
-        return ResponseEntity.ok(cardService.getCardsByPersonAdmin(personId, status, pageable));
+        return ResponseEntity.ok(cardService.getCardsByPersonUser(personId, status, pageable));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwner(#id, authentication)")
+    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
-    public ResponseEntity<CardAdminResponse> getCardById(@PathVariable Long id) {
-        return ResponseEntity.ok(cardService.getCardByIdAdmin(id));
+    public ResponseEntity<CardResponse> getMyCardById(@PathVariable Long id) {
+        return ResponseEntity.ok(cardService.getCardByIdUser(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<CardAdminResponse> createCard(@Valid @RequestBody CardCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(request));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/block")
-    public ResponseEntity<CardAdminResponse> blockCard(@PathVariable Long id) {
-        return ResponseEntity.ok(cardService.blockCard(id));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/activate")
-    public ResponseEntity<CardAdminResponse> activateCard(@PathVariable Long id) {
-        return ResponseEntity.ok(cardService.activateCard(id));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCard(@PathVariable Long id) {
-        cardService.deleteCard(id);
-    }
-
-    @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwner(#request.fromCardId, authentication)")
-    @PostMapping("/transfer")
-    public ResponseEntity<CardTransferResponse> transfer(@Valid @RequestBody CardTransferRequest request) {
-        return ResponseEntity.ok(transferService.transfer(request));
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/{id}/block-request")
+    public ResponseEntity<CardBlockRequestResponse> requestBlock(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Person person = (Person) authentication.getPrincipal();
+        CardBlockRequestRequest request = new CardBlockRequestRequest(id, person.getId());
+        return ResponseEntity.ok(cardBlockRequestService.createRequest(request));
     }
 }
