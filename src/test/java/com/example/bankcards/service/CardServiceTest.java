@@ -67,7 +67,7 @@ class CardServiceTest {
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        Page<CardResponse> result = cardService.getCardsByPerson(1L, PageRequest.of(0, 10));
+        Page<CardResponse> result = cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10));
 
         assertEquals(1, result.getContent().size());
         assertEquals("**** **** **** 7890", result.getContent().get(0).maskedNumber());
@@ -78,7 +78,7 @@ class CardServiceTest {
         when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        Page<CardResponse> result = cardService.getCardsByPerson(1L, PageRequest.of(0, 10));
+        Page<CardResponse> result = cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10));
 
         assertTrue(result.isEmpty());
     }

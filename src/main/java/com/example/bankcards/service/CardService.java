@@ -5,6 +5,7 @@ import com.example.bankcards.dto.card.CardResponse;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Person;
+import org.springframework.util.StringUtils;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.mapper.CardMapper;
@@ -36,9 +37,15 @@ public class CardService {
     private static final String CARD_NOT_FOUND = "Card not found with id: %d";
 
     @Transactional(readOnly = true)
-    public Page<CardResponse> getCardsByPerson(Long personId, Pageable pageable) {
-        return cardRepository.findByPerson_Id(personId, pageable)
-                .map(card -> enrichWithMaskedNumber(cardMapper.toCardResponse(card), card));
+    public Page<CardResponse> getCardsByPerson(Long personId, String status, Pageable pageable) {
+        Page<Card> cards;
+        if (StringUtils.hasText(status)) {
+            CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
+            cards = cardRepository.findByPerson_IdAndCardStatus(personId, cardStatus, pageable);
+        } else {
+            cards = cardRepository.findByPerson_Id(personId, pageable);
+        }
+        return cards.map(card -> enrichWithMaskedNumber(cardMapper.toCardResponse(card), card));
     }
 
     @Transactional(readOnly = true)

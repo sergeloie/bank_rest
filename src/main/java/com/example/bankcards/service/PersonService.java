@@ -56,6 +56,9 @@ public class PersonService {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         personMapper.updateEntity(request, person);
+        if (request.password() != null) {
+            person.setPassword(passwordEncoder.encode(request.password()));
+        }
         return personMapper.toPersonResponse(personRepository.save(person));
     }
 

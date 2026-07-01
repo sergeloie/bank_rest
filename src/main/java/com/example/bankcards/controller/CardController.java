@@ -25,8 +25,11 @@ public class CardController {
 
     @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwnerByPersonId(#personId, authentication)")
     @GetMapping("/person/{personId}")
-    public ResponseEntity<Page<CardResponse>> getCardsByPerson(@PathVariable Long personId, Pageable pageable) {
-        return ResponseEntity.ok(cardService.getCardsByPerson(personId, pageable));
+    public ResponseEntity<Page<CardResponse>> getCardsByPerson(
+            @PathVariable Long personId,
+            @RequestParam(required = false) String status,
+            Pageable pageable) {
+        return ResponseEntity.ok(cardService.getCardsByPerson(personId, status, pageable));
     }
 
     @PreAuthorize("hasRole('ADMIN') or @cardSecurity.isOwner(#id, authentication)")

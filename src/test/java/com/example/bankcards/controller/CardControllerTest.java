@@ -61,7 +61,7 @@ class CardControllerTest {
     @Test
     void getCardsByPerson_shouldReturnPage() throws Exception {
         CardResponse dto = new CardResponse(1L, 1L, "Alice", "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardService.getCardsByPerson(1L, PageRequest.of(0, 10)))
+        when(cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
         mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
@@ -73,7 +73,7 @@ class CardControllerTest {
 
     @Test
     void getCardsByPerson_shouldReturnEmptyPageWhenNoCards() throws Exception {
-        when(cardService.getCardsByPerson(1L, PageRequest.of(0, 10)))
+        when(cardService.getCardsByPerson(1L, null, PageRequest.of(0, 10)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
 
         mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
