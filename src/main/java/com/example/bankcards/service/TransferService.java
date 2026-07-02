@@ -24,6 +24,7 @@ public class TransferService {
                 request.fromCardId(), request.toCardId(), request.amount(), request.personId());
 
         if (request.fromCardId().equals(request.toCardId())) {
+            log.warn("Transfer rejected: cannot transfer to the same card (cardId={})", request.fromCardId());
             throw new InvalidCardOperationException("Cannot transfer to the same card");
         }
 
@@ -32,30 +33,43 @@ public class TransferService {
         Long secondId = Math.max(request.fromCardId(), request.toCardId());
 
         Card firstCard = cardRepository.findByIdForUpdate(firstId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + firstId));
+                .orElseThrow(() -> {
+                    log.warn("Transfer rejected: source card not found (cardId={})", firstId);
+                    return new ResourceNotFoundException("Card not found with id: " + firstId);
+                });
         Card secondCard = cardRepository.findByIdForUpdate(secondId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + secondId));
+                .orElseThrow(() -> {
+                    log.warn("Transfer rejected: target card not found (cardId={})", secondId);
+                    return new ResourceNotFoundException("Card not found with id: " + secondId);
+                });
 
         Card fromCard = firstCard.getId().equals(request.fromCardId()) ? firstCard : secondCard;
         Card toCard = firstCard.getId().equals(request.toCardId()) ? firstCard : secondCard;
 
         if (!fromCard.getPerson().getId().equals(toCard.getPerson().getId())) {
+            log.warn("Transfer rejected: cards do not belong to the same person (fromPerson={}, toPerson={})",
+                    fromCard.getPerson().getId(), toCard.getPerson().getId());
             throw new InvalidCardOperationException("Can only transfer between own cards");
         }
 
         if (!fromCard.getPerson().getId().equals(request.personId())) {
+            log.warn("Transfer rejected: cards do not belong to person {}", request.personId());
             throw new InvalidCardOperationException("Cards do not belong to this person");
         }
 
         if (fromCard.getCardStatus() != CardStatus.ACTIVE) {
+            log.warn("Transfer rejected: source card {} is not active (status={})", fromCard.getId(), fromCard.getCardStatus());
             throw new InvalidCardOperationException("Source card must be active");
         }
 
         if (toCard.getCardStatus() != CardStatus.ACTIVE) {
+            log.warn("Transfer rejected: target card {} is not active (status={})", toCard.getId(), toCard.getCardStatus());
             throw new InvalidCardOperationException("Target card must be active");
         }
 
         if (fromCard.getBalance().compareTo(request.amount()) < 0) {
+            log.warn("Transfer rejected: insufficient funds on card {}, requested={}, available={}",
+                    fromCard.getId(), request.amount(), fromCard.getBalance());
             throw new InvalidCardOperationException("Insufficient funds on source card");
         }
 
