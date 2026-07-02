@@ -114,6 +114,21 @@ class PersonServiceTest {
     }
 
     @Test
+    void update_shouldIncrementPasswordVersionWhenPasswordChanges() {
+        Person person = createPerson(1L, "Alice");
+        person.setPasswordVersion(0L);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
+        PersonAdminResponse dto = createAdminResponse("Alice");
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(personRepository.save(any(Person.class))).thenReturn(person);
+        when(personMapper.toAdminResponse(any(Person.class))).thenReturn(dto);
+
+        personService.update(1L, request);
+
+        assertEquals(1L, person.getPasswordVersion());
+    }
+
+    @Test
     void update_shouldThrowWhenNotFound() {
         PersonUpdateRequest request = new PersonUpdateRequest("pass", Role.USER);
         when(personRepository.findById(99L)).thenReturn(Optional.empty());

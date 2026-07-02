@@ -59,6 +59,7 @@ public class PersonService {
         personMapper.updateEntity(request, person);
         if (request.password() != null) {
             person.setPassword(passwordEncoder.encode(request.password()));
+            person.setPasswordVersion(person.getPasswordVersion() + 1);
         }
         return personMapper.toAdminResponse(personRepository.save(person));
     }

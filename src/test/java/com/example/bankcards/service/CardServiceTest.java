@@ -9,7 +9,6 @@ import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
-import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.util.CardEncryptionUtil;
@@ -39,7 +38,6 @@ class CardServiceTest {
 
     @Mock private CardRepository cardRepository;
     @Mock private PersonRepository personRepository;
-    @Mock private CardMapper cardMapper;
     @Mock private CardNumberGenerator cardNumberGenerator;
     @Mock private CardEncryptionUtil cardEncryptionUtil;
     @Mock private CardMaskUtil cardMaskUtil;

@@ -42,6 +42,12 @@ databaseChangeLog:
                   name: modified_by
                   type: BIGINT
               - column:
+                  name: password_version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
                   name: version
                   type: BIGINT
                   defaultValueNumeric: 0

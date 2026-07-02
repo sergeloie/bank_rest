@@ -48,6 +48,9 @@ public class Person {
     @Column(name = "modified_by")
     private Long modifiedBy;
 
+    @Column(name = "password_version", nullable = false)
+    private Long passwordVersion = 0L;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version;

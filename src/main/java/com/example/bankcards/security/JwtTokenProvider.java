@@ -31,6 +31,7 @@ public class JwtTokenProvider {
                 .subject(String.valueOf(person.getId()))
                 .claim("role", person.getRole().name())
                 .claim("type", "access")
+                .claim("passwordVersion", person.getPasswordVersion())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -44,6 +45,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(String.valueOf(person.getId()))
                 .claim("type", "refresh")
+                .claim("passwordVersion", person.getPasswordVersion())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -68,5 +70,9 @@ public class JwtTokenProvider {
 
     public boolean isRefreshToken(String token) {
         return "refresh".equals(validateToken(token).get("type", String.class));
+    }
+
+    public Long getPasswordVersion(Claims claims) {
+        return claims.get("passwordVersion", Long.class);
     }
 }

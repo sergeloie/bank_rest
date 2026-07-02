@@ -1,8 +1,6 @@
 package com.example.bankcards.mapper;
 
-import com.example.bankcards.dto.card.CardAdminResponse;
 import com.example.bankcards.dto.card.CardCreateRequest;
-import com.example.bankcards.dto.card.CardResponse;
 import com.example.bankcards.entity.Card;
 import org.mapstruct.*;
 
@@ -10,8 +8,4 @@ import org.mapstruct.*;
 public interface CardMapper {
     @Mapping(source = "personId", target = "person.id")
     Card toEntity(CardCreateRequest cardCreateRequest);
-
-    CardResponse toCardResponse(Card card);
-
-    CardAdminResponse toAdminResponse(Card card);
 }

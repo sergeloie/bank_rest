@@ -9,7 +9,6 @@ import com.example.bankcards.entity.Person;
 import org.springframework.util.StringUtils;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
-import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.util.CardEncryptionUtil;
@@ -30,7 +29,6 @@ import java.time.ZoneId;
 public class CardService {
     private final CardRepository cardRepository;
     private final PersonRepository personRepository;
-    private final CardMapper cardMapper;
     private final CardNumberGenerator cardNumberGenerator;
     private final CardEncryptionUtil cardEncryptionUtil;
     private final CardMaskUtil cardMaskUtil;

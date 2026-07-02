@@ -42,10 +42,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Person person = personRepository.findById(personId).orElse(null);
 
                     if (person != null) {
-                        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + person.getRole().name());
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(person, null, List.of(authority));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        Long tokenPasswordVersion = jwtTokenProvider.getPasswordVersion(claims);
+                        if (tokenPasswordVersion != null && tokenPasswordVersion.equals(person.getPasswordVersion())) {
+                            SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + person.getRole().name());
+                            UsernamePasswordAuthenticationToken auth =
+                                    new UsernamePasswordAuthenticationToken(person, null, List.of(authority));
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                        }
                     }
                 }
             } catch (Exception ignored) {

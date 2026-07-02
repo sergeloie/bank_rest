@@ -33,6 +33,7 @@ class JwtTokenProviderTest {
         assertEquals("1", claims.getSubject());
         assertEquals("ADMIN", claims.get("role", String.class));
         assertEquals("access", claims.get("type", String.class));
+        assertEquals(0L, claims.get("passwordVersion", Long.class));
     }
 
     @Test
@@ -45,6 +46,7 @@ class JwtTokenProviderTest {
         Claims claims = jwtTokenProvider.validateToken(token);
         assertEquals("1", claims.getSubject());
         assertEquals("refresh", claims.get("type", String.class));
+        assertEquals(0L, claims.get("passwordVersion", Long.class));
     }
 
     @Test
@@ -77,6 +79,18 @@ class JwtTokenProviderTest {
 
         assertTrue(jwtTokenProvider.isRefreshToken(refreshToken));
         assertFalse(jwtTokenProvider.isRefreshToken(accessToken));
+    }
+
+    @Test
+    void getPasswordVersion_shouldExtractVersion() {
+        Person person = createPerson();
+        person.setPasswordVersion(5L);
+        String token = jwtTokenProvider.generateAccessToken(person);
+        Claims claims = jwtTokenProvider.validateToken(token);
+
+        Long passwordVersion = jwtTokenProvider.getPasswordVersion(claims);
+
+        assertEquals(5L, passwordVersion);
     }
 
     private Person createPerson() {
