@@ -9,6 +9,7 @@ import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.TransferHistoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +27,9 @@ class TransferServiceTest {
 
     @Mock
     private CardRepository cardRepository;
+
+    @Mock
+    private TransferHistoryRepository transferHistoryRepository;
 
     @InjectMocks
     private TransferService transferService;

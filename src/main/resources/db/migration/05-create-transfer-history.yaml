@@ -1,0 +1,73 @@
+databaseChangeLog:
+  - changeSet:
+      id: '5'
+      author: bank-rest
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            tableName: transfer_history
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_transfer_history
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: person_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: from_card_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: to_card_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: amount
+                  type: DECIMAL(15, 2)
+              - column:
+                  name: transaction_date
+                  type: timestamp with time zone
+              - column:
+                  name: created_by
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseColumnNames: person_id
+            baseTableName: transfer_history
+            constraintName: FK_TRANSFER_HISTORY_ON_PERSON
+            referencedColumnNames: id
+            referencedTableName: person
+        - addForeignKeyConstraint:
+            baseColumnNames: from_card_id
+            baseTableName: transfer_history
+            constraintName: FK_TRANSFER_HISTORY_ON_FROM_CARD
+            referencedColumnNames: id
+            referencedTableName: card
+        - addForeignKeyConstraint:
+            baseColumnNames: to_card_id
+            baseTableName: transfer_history
+            constraintName: FK_TRANSFER_HISTORY_ON_TO_CARD
+            referencedColumnNames: id
+            referencedTableName: card
+        - createIndex:
+            tableName: transfer_history
+            columns:
+              - column:
+                  name: person_id
+            indexName: idx_transfer_history_person_id
+        - createIndex:
+            tableName: transfer_history
+            columns:
+              - column:
+                  name: transaction_date
+            indexName: idx_transfer_history_transaction_date

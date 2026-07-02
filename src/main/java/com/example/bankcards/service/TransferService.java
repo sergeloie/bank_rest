@@ -4,9 +4,11 @@ import com.example.bankcards.dto.card.CardTransferRequest;
 import com.example.bankcards.dto.card.CardTransferResponse;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
+import com.example.bankcards.entity.TransferHistory;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.TransferHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TransferService {
     private final CardRepository cardRepository;
+    private final TransferHistoryRepository transferHistoryRepository;
 
     @Transactional
     public CardTransferResponse transfer(CardTransferRequest request) {
@@ -75,6 +78,13 @@ public class TransferService {
 
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
         toCard.setBalance(toCard.getBalance().add(request.amount()));
+
+        TransferHistory history = new TransferHistory();
+        history.setPerson(fromCard.getPerson());
+        history.setFromCard(fromCard);
+        history.setToCard(toCard);
+        history.setAmount(request.amount());
+        transferHistoryRepository.save(history);
 
         log.info("Transfer completed: fromCard={}, toCard={}, amount={}",
                 request.fromCardId(), request.toCardId(), request.amount());
