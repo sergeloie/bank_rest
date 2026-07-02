@@ -8,9 +8,11 @@ import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -21,12 +23,17 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         Person person = personRepository.findByName(request.name())
-                .orElseThrow(() -> new InvalidCardOperationException("Invalid credentials"));
+                .orElseThrow(() -> {
+                    log.warn("Failed login attempt for unknown user: {}", request.name());
+                    return new InvalidCardOperationException("Invalid credentials");
+                });
 
         if (!passwordEncoder.matches(request.password(), person.getPassword())) {
+            log.warn("Failed login attempt for user: {} (wrong password)", request.name());
             throw new InvalidCardOperationException("Invalid credentials");
         }
 
+        log.info("User logged in: {}", request.name());
         String accessToken = jwtTokenProvider.generateAccessToken(person);
         String refreshToken = jwtTokenProvider.generateRefreshToken(person);
 
@@ -44,6 +51,7 @@ public class AuthService {
             Person person = personRepository.findById(personId)
                     .orElseThrow(() -> new InvalidCardOperationException("User not found"));
 
+            log.info("Token refreshed for user: {}", person.getName());
             String accessToken = jwtTokenProvider.generateAccessToken(person);
             String refreshToken = jwtTokenProvider.generateRefreshToken(person);
 
@@ -51,6 +59,7 @@ public class AuthService {
         } catch (InvalidCardOperationException e) {
             throw e;
         } catch (Exception e) {
+            log.warn("Invalid refresh token attempt: {}", e.getMessage());
             throw new InvalidCardOperationException("Invalid refresh token");
         }
     }

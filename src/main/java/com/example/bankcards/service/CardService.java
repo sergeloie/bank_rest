@@ -15,6 +15,7 @@ import com.example.bankcards.util.CardEncryptionUtil;
 import com.example.bankcards.util.CardMaskUtil;
 import com.example.bankcards.util.CardNumberGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CardService {
@@ -100,6 +102,7 @@ public class CardService {
         card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
 
         Card saved = cardRepository.save(card);
+        log.info("Card created: id={}, personId={}", saved.getId(), person.getId());
         return toAdminResponse(saved);
     }
 
@@ -113,6 +116,7 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.BLOCKED);
+        log.info("Card blocked: id={}", id);
         return toAdminResponse(card);
     }
 
@@ -126,6 +130,7 @@ public class CardService {
         }
 
         card.setCardStatus(CardStatus.ACTIVE);
+        log.info("Card activated: id={}", id);
         return toAdminResponse(card);
     }
 
@@ -134,6 +139,7 @@ public class CardService {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         cardRepository.delete(card);
+        log.info("Card deleted: id={}", id);
     }
 
     private Page<Card> getCardsByPersonInternal(Long personId, String status, Pageable pageable) {

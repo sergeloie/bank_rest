@@ -8,9 +8,11 @@ import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class TransferService {
@@ -18,6 +20,9 @@ public class TransferService {
 
     @Transactional
     public CardTransferResponse transfer(CardTransferRequest request) {
+        log.info("Transfer initiated: fromCard={}, toCard={}, amount={}, personId={}",
+                request.fromCardId(), request.toCardId(), request.amount(), request.personId());
+
         if (request.fromCardId().equals(request.toCardId())) {
             throw new InvalidCardOperationException("Cannot transfer to the same card");
         }
@@ -56,6 +61,9 @@ public class TransferService {
 
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
         toCard.setBalance(toCard.getBalance().add(request.amount()));
+
+        log.info("Transfer completed: fromCard={}, toCard={}, amount={}",
+                request.fromCardId(), request.toCardId(), request.amount());
 
         return new CardTransferResponse(
                 fromCard.getId(),

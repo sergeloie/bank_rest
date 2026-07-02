@@ -12,6 +12,7 @@ import com.example.bankcards.mapper.PersonMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PersonService {
@@ -46,7 +48,9 @@ public class PersonService {
         Person person = personMapper.toEntity(request);
         person.setPassword(passwordEncoder.encode(request.password()));
         try {
-            return personMapper.toAdminResponse(personRepository.save(person));
+            Person saved = personRepository.save(person);
+            log.info("Person created: id={}, name={}", saved.getId(), saved.getName());
+            return personMapper.toAdminResponse(saved);
         } catch (DataIntegrityViolationException _) {
             throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
         }
@@ -60,6 +64,7 @@ public class PersonService {
         if (request.password() != null) {
             person.setPassword(passwordEncoder.encode(request.password()));
             person.setPasswordVersion(person.getPasswordVersion() + 1);
+            log.info("Password changed for person: id={}", id);
         }
         return personMapper.toAdminResponse(personRepository.save(person));
     }
@@ -72,5 +77,6 @@ public class PersonService {
             throw new InvalidCardOperationException("Cannot delete person with existing cards");
         }
         personRepository.delete(person);
+        log.info("Person deleted: id={}", id);
     }
 }

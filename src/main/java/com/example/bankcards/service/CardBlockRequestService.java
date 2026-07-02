@@ -17,11 +17,13 @@ import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.util.CardEncryptionUtil;
 import com.example.bankcards.util.CardMaskUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CardBlockRequestService {
@@ -54,6 +56,7 @@ public class CardBlockRequestService {
         blockRequest.setBlockRequestStatus(BlockRequestStatus.PENDING);
 
         CardBlockRequest saved = cardBlockRequestRepository.save(blockRequest);
+        log.info("Block request created: id={}, cardId={}, personId={}", saved.getId(), card.getId(), person.getId());
         String maskedCardNumber = computeMaskedNumber(card);
         return new CardBlockRequestResponse(maskedCardNumber, saved.getBlockRequestStatus());
     }
@@ -76,6 +79,7 @@ public class CardBlockRequestService {
         blockRequest.setBlockRequestStatus(BlockRequestStatus.APPROVED);
         blockRequest.getCard().setCardStatus(CardStatus.BLOCKED);
 
+        log.info("Block request approved: id={}", requestId);
         return toAdminResponse(blockRequest);
     }
 
@@ -90,6 +94,7 @@ public class CardBlockRequestService {
 
         blockRequest.setBlockRequestStatus(BlockRequestStatus.REJECTED);
 
+        log.info("Block request rejected: id={}", requestId);
         return toAdminResponse(blockRequest);
     }
 
