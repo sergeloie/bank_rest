@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record CardResponse(
+    Long id,
     String maskedNumber,
     LocalDate expirationDate,
     CardStatus cardStatus,

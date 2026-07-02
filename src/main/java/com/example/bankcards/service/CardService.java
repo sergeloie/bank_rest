@@ -175,6 +175,7 @@ public class CardService {
     private CardResponse toUserResponse(Card card) {
         String masked = computeMaskedNumber(card);
         return new CardResponse(
+                card.getId(),
                 masked,
                 card.getExpirationDate(),
                 card.getCardStatus(),

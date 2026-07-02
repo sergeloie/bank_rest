@@ -56,7 +56,7 @@ class CardControllerTest {
 
     @Test
     void getMyCards_shouldReturnPage() throws Exception {
-        CardResponse dto = new CardResponse("**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        CardResponse dto = new CardResponse(1L, "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
         when(cardService.getCardsByPersonUser(eq(1L), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -78,7 +78,7 @@ class CardControllerTest {
 
     @Test
     void getMyCardById_shouldReturnCard() throws Exception {
-        CardResponse dto = new CardResponse("**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        CardResponse dto = new CardResponse(1L, "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
         when(cardService.getCardByIdUser(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/cards/1"))
