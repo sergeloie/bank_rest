@@ -3,14 +3,15 @@ package com.example.bankcards.dto.person;
 import com.example.bankcards.entity.Role;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record PersonAdminResponse(
-    Long id,
+    UUID id,
     String name,
     Role role,
     Instant createdDate,
     Instant lastModifiedDate,
-    Long createdBy,
-    Long modifiedBy
+    UUID createdBy,
+    UUID modifiedBy
 ) {
 }

@@ -20,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -28,7 +30,7 @@ public class PersonService {
     private final CardRepository cardRepository;
     private final PersonMapper personMapper;
     private final PasswordEncoder passwordEncoder;
-    private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
+    private static final String PERSON_NOT_FOUND = "Person not found with id: %s";
     private static final String PERSON_EXISTS = "Person already exists with name: %s";
 
     @Transactional(readOnly = true)
@@ -37,7 +39,7 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
-    public PersonAdminResponse getById(Long id) {
+    public PersonAdminResponse getById(UUID id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         return personMapper.toAdminResponse(person);
@@ -57,7 +59,7 @@ public class PersonService {
     }
 
     @Transactional
-    public PersonAdminResponse update(Long id, PersonUpdateRequest request) {
+    public PersonAdminResponse update(UUID id, PersonUpdateRequest request) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         personMapper.updateEntity(request, person);
@@ -70,7 +72,7 @@ public class PersonService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, id)));
         if (cardRepository.existsByPerson_Id(id)) {

@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,8 +75,8 @@ class AuthServiceTest {
         Person person = createPerson();
         when(jwtTokenProvider.validateToken("refresh-token")).thenAnswer(i -> null);
         when(jwtTokenProvider.isRefreshToken("refresh-token")).thenReturn(true);
-        when(jwtTokenProvider.getPersonId("refresh-token")).thenReturn(1L);
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(jwtTokenProvider.getPersonId("refresh-token")).thenReturn(person.getId());
+        when(personRepository.findById(person.getId())).thenReturn(Optional.of(person));
         when(jwtTokenProvider.generateAccessToken(person)).thenReturn("new-access");
         when(jwtTokenProvider.generateRefreshToken(person)).thenReturn("new-refresh");
 
@@ -96,7 +97,7 @@ class AuthServiceTest {
 
     private Person createPerson() {
         Person p = new Person();
-        p.setId(1L);
+        p.setId(UUID.randomUUID());
         p.setName("admin");
         p.setPassword("hashed");
         p.setRole(Role.ADMIN);

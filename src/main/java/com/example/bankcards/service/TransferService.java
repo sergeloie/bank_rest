@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -32,8 +34,8 @@ public class TransferService {
         }
 
         // Deterministic lock order: lock lower ID first to prevent deadlock
-        Long firstId = Math.min(request.fromCardId(), request.toCardId());
-        Long secondId = Math.max(request.fromCardId(), request.toCardId());
+        UUID firstId = request.fromCardId().compareTo(request.toCardId()) < 0 ? request.fromCardId() : request.toCardId();
+        UUID secondId = request.fromCardId().compareTo(request.toCardId()) < 0 ? request.toCardId() : request.fromCardId();
 
         Card firstCard = cardRepository.findByIdForUpdate(firstId)
                 .orElseThrow(() -> {

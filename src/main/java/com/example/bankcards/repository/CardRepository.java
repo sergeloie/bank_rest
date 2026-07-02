@@ -12,23 +12,24 @@ import org.springframework.data.jpa.repository.Query;
 import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface CardRepository extends JpaRepository<Card, Long> {
+public interface CardRepository extends JpaRepository<Card, UUID> {
     @EntityGraph(attributePaths = {"person"})
-    Page<Card> findByPerson_Id(Long id, Pageable pageable);
+    Page<Card> findByPerson_Id(UUID id, Pageable pageable);
 
     @EntityGraph(attributePaths = {"person"})
-    Page<Card> findByPerson_IdAndCardStatus(Long id, CardStatus status, Pageable pageable);
+    Page<Card> findByPerson_IdAndCardStatus(UUID id, CardStatus status, Pageable pageable);
 
     List<Card> findByCardStatusAndExpirationDateBefore(CardStatus status, java.time.LocalDate date);
 
     boolean existsByCardHash(String cardHash);
 
-    boolean existsByPerson_Id(Long id);
+    boolean existsByPerson_Id(UUID id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Card c WHERE c.id = :id")
-    Optional<Card> findByIdForUpdate(Long id);
+    Optional<Card> findByIdForUpdate(UUID id);
 
     @EntityGraph(attributePaths = {"person"})
     Page<Card> findByCardStatus(CardStatus status, Pageable pageable);

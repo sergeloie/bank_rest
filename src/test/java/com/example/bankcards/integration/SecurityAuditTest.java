@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -33,9 +34,9 @@ class SecurityAuditTest {
     private String adminToken;
     private String aliceToken;
     private String bobToken;
-    private Long aliceId;
-    private Long bobId;
-    private Long bobCardId;
+    private UUID aliceId;
+    private UUID bobId;
+    private UUID bobCardId;
 
     @BeforeAll
     void setup() {
@@ -52,20 +53,20 @@ class SecurityAuditTest {
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
-        aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", Long.class);
+        aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
         // Create Bob
         var bobReq = new PersonCreateRequest("Bob", "pass456", Role.USER);
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
         var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass456"), AuthResponse.class);
         bobToken = bobLogin.getBody().accessToken();
-        bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", Long.class);
+        bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
         // Create Bob's card
         var cardReq = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
         var cardResp = restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq, authHeaders(adminToken)), Object.class);
         // We know the ID will be 1 or something small, let's just query it
-        bobCardId = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ?", Long.class, bobId);
+        bobCardId = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ?", UUID.class, bobId);
     }
 
     private HttpHeaders authHeaders(String token) {
@@ -81,7 +82,7 @@ class SecurityAuditTest {
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange(
                 "/api/cards/" + bobCardId + "/block-request", HttpMethod.PUT, entity, Void.class);
-        
+
         System.out.println("Block card status: " + resp.getStatusCode());
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(), "Should be forbidden for Alice to block Bob's card");
     }
@@ -91,7 +92,7 @@ class SecurityAuditTest {
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange(
                 "/api/admin/users", HttpMethod.GET, entity, Void.class);
-        
+
         System.out.println("Admin users status: " + resp.getStatusCode());
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(), "Should be forbidden for Alice to access admin endpoint");
     }

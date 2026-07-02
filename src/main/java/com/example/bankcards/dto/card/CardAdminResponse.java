@@ -5,10 +5,11 @@ import com.example.bankcards.entity.CardStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record CardAdminResponse(
-    Long id,
-    Long personId,
+    UUID id,
+    UUID personId,
     String personName,
     String maskedNumber,
     LocalDate expirationDate,
@@ -16,7 +17,7 @@ public record CardAdminResponse(
     BigDecimal balance,
     Instant createdDate,
     Instant lastModifiedDate,
-    Long createdBy,
-    Long modifiedBy
+    UUID createdBy,
+    UUID modifiedBy
 ) {
 }

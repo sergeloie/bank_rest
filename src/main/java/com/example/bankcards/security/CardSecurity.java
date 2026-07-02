@@ -7,13 +7,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component("cardSecurity")
 @RequiredArgsConstructor
 public class CardSecurity {
 
     private final CardRepository cardRepository;
 
-    public boolean isOwner(Long cardId, Authentication authentication) {
+    public boolean isOwner(UUID cardId, Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof Person person)) {
             return false;
         }
@@ -22,7 +24,7 @@ public class CardSecurity {
                 .orElse(false);
     }
 
-    public boolean isOwnerByPersonId(Long personId, Authentication authentication) {
+    public boolean isOwnerByPersonId(UUID personId, Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof Person person)) {
             return false;
         }

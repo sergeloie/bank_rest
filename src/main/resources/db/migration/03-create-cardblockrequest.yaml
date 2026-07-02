@@ -18,12 +18,12 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                   name: card_id
-                  type: BIGINT
+                  type: UUID
               - column:
                   constraints:
                     nullable: false
                   name: person_id
-                  type: BIGINT
+                  type: UUID
               - column:
                   constraints:
                     nullable: false
@@ -37,10 +37,10 @@ databaseChangeLog:
                   type: timestamp with time zone
               - column:
                   name: created_by
-                  type: BIGINT
+                  type: UUID
               - column:
                   name: modified_by
-                  type: BIGINT
+                  type: UUID
             tableName: card_block_request
         - addForeignKeyConstraint:
             baseColumnNames: person_id

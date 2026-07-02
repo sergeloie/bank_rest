@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,9 +19,9 @@ import java.time.Instant;
 @EntityListeners(AuditingEntityListener.class)
 public class Person {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private UUID id;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
@@ -42,11 +43,11 @@ public class Person {
 
     @CreatedBy
     @Column(name = "created_by")
-    private Long createdBy;
+    private UUID createdBy;
 
     @LastModifiedBy
     @Column(name = "modified_by")
-    private Long modifiedBy;
+    private UUID modifiedBy;
 
     @Column(name = "password_version", nullable = false)
     private Long passwordVersion = 0L;

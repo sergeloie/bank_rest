@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,7 +34,7 @@ class NewFullIntegrationTest {
 
     private String adminToken;
     private String userToken;
-    private Long userId;
+    private UUID userId;
 
     @BeforeAll
     void setup() {
@@ -46,7 +47,7 @@ class NewFullIntegrationTest {
         // Create User
         var userReq = new PersonCreateRequest("User", "userpass", Role.USER);
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, adminHeaders()), Void.class);
-        userId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'User'", Long.class);
+        userId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'User'", UUID.class);
         userToken = login("User", "userpass");
     }
 
@@ -91,8 +92,8 @@ class NewFullIntegrationTest {
         var userReq = new PersonCreateRequest("NewUser", "pass", Role.USER);
         var createResp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, adminHeaders()), Void.class);
         assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
-        
-        Long newUserId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'NewUser'", Long.class);
+
+        UUID newUserId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'NewUser'", UUID.class);
         var deleteResp = restTemplate.exchange("/api/admin/users/" + newUserId, HttpMethod.DELETE, new HttpEntity<>(adminHeaders()), Void.class);
         assertEquals(HttpStatus.NO_CONTENT, deleteResp.getStatusCode());
     }

@@ -4,9 +4,10 @@ import com.example.bankcards.entity.CardStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record CardResponse(
-    Long id,
+    UUID id,
     String maskedNumber,
     LocalDate expirationDate,
     CardStatus cardStatus,

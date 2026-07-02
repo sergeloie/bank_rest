@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,9 +32,9 @@ class CardExpirationSchedulerTest {
 
     @Test
     void expireCards_whenExpiredCardsExist_setsStatusToExpired() {
-        Person person = createPerson(1L);
-        Card card1 = createCard(1L, person, CardStatus.ACTIVE, LocalDate.now().minusDays(1));
-        Card card2 = createCard(2L, person, CardStatus.ACTIVE, LocalDate.now().minusDays(5));
+        Person person = createPerson(UUID.randomUUID());
+        Card card1 = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE, LocalDate.now().minusDays(1));
+        Card card2 = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE, LocalDate.now().minusDays(5));
         when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class)))
                 .thenReturn(List.of(card1, card2));
 
@@ -64,7 +65,7 @@ class CardExpirationSchedulerTest {
         verify(cardRepository).findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class));
     }
 
-    private Person createPerson(Long id) {
+    private Person createPerson(UUID id) {
         Person p = new Person();
         p.setId(id);
         p.setName("Alice");
@@ -73,7 +74,7 @@ class CardExpirationSchedulerTest {
         return p;
     }
 
-    private Card createCard(Long id, Person person, CardStatus status, LocalDate expirationDate) {
+    private Card createCard(UUID id, Person person, CardStatus status, LocalDate expirationDate) {
         Card c = new Card();
         c.setId(id);
         c.setPerson(person);

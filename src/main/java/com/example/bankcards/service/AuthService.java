@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class AuthService {
                 throw new InvalidCardOperationException("Not a refresh token");
             }
 
-            Long personId = jwtTokenProvider.getPersonId(request.refreshToken());
+            UUID personId = jwtTokenProvider.getPersonId(request.refreshToken());
             Person person = personRepository.findById(personId)
                     .orElseThrow(() -> new InvalidCardOperationException("User not found"));
 

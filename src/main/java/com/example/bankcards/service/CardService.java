@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,17 +35,17 @@ public class CardService {
     private final CardNumberGenerator cardNumberGenerator;
     private final CardEncryptionUtil cardEncryptionUtil;
     private final CardMaskUtil cardMaskUtil;
-    private static final String PERSON_NOT_FOUND = "Person not found with id: %d";
-    private static final String CARD_NOT_FOUND = "Card not found with id: %d";
+    private static final String PERSON_NOT_FOUND = "Person not found with id: %s";
+    private static final String CARD_NOT_FOUND = "Card not found with id: %s";
 
     @Transactional(readOnly = true)
-    public Page<CardAdminResponse> getCardsByPersonAdmin(Long personId, String status, Pageable pageable) {
+    public Page<CardAdminResponse> getCardsByPersonAdmin(UUID personId, String status, Pageable pageable) {
         return getCardsByPersonInternal(personId, status, pageable)
                 .map(this::toAdminResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<CardAdminResponse> getAllCardsAdmin(Long personId, String status, Pageable pageable) {
+    public Page<CardAdminResponse> getAllCardsAdmin(UUID personId, String status, Pageable pageable) {
         Page<Card> cards;
         if (personId != null && StringUtils.hasText(status)) {
             CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
@@ -61,20 +62,20 @@ public class CardService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CardResponse> getCardsByPersonUser(Long personId, String status, Pageable pageable) {
+    public Page<CardResponse> getCardsByPersonUser(UUID personId, String status, Pageable pageable) {
         return getCardsByPersonInternal(personId, status, pageable)
                 .map(this::toUserResponse);
     }
 
     @Transactional(readOnly = true)
-    public CardAdminResponse getCardByIdAdmin(Long id) {
+    public CardAdminResponse getCardByIdAdmin(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         return toAdminResponse(card);
     }
 
     @Transactional(readOnly = true)
-    public CardResponse getCardByIdUser(Long id) {
+    public CardResponse getCardByIdUser(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         return toUserResponse(card);
@@ -107,7 +108,7 @@ public class CardService {
     }
 
     @Transactional
-    public CardAdminResponse blockCard(Long id) {
+    public CardAdminResponse blockCard(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
@@ -121,7 +122,7 @@ public class CardService {
     }
 
     @Transactional
-    public CardAdminResponse activateCard(Long id) {
+    public CardAdminResponse activateCard(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
@@ -135,14 +136,14 @@ public class CardService {
     }
 
     @Transactional
-    public void deleteCard(Long id) {
+    public void deleteCard(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
         cardRepository.delete(card);
         log.info("Card deleted: id={}", id);
     }
 
-    private Page<Card> getCardsByPersonInternal(Long personId, String status, Pageable pageable) {
+    private Page<Card> getCardsByPersonInternal(UUID personId, String status, Pageable pageable) {
         if (StringUtils.hasText(status)) {
             CardStatus cardStatus = CardStatus.valueOf(status.toUpperCase());
             return cardRepository.findByPerson_IdAndCardStatus(personId, cardStatus, pageable);

@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -17,7 +19,7 @@ public class TransferHistoryService {
     private final TransferHistoryRepository transferHistoryRepository;
 
     @Transactional(readOnly = true)
-    public Page<TransferHistoryResponse> getTransfers(Long personId, Pageable pageable) {
+    public Page<TransferHistoryResponse> getTransfers(UUID personId, Pageable pageable) {
         Page<TransferHistory> history;
         if (personId != null) {
             history = transferHistoryRepository.findByPerson_Id(personId, pageable);

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + jwtProperties.getAccessExpiration());
 
         return Jwts.builder()
-                .subject(String.valueOf(person.getId()))
+                .subject(person.getId().toString())
                 .claim("role", person.getRole().name())
                 .claim("type", "access")
                 .claim("passwordVersion", person.getPasswordVersion())
@@ -43,7 +44,7 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + jwtProperties.getRefreshExpiration());
 
         return Jwts.builder()
-                .subject(String.valueOf(person.getId()))
+                .subject(person.getId().toString())
                 .claim("type", "refresh")
                 .claim("passwordVersion", person.getPasswordVersion())
                 .issuedAt(now)
@@ -60,8 +61,8 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
-    public Long getPersonId(String token) {
-        return Long.valueOf(validateToken(token).getSubject());
+    public UUID getPersonId(String token) {
+        return UUID.fromString(validateToken(token).getSubject());
     }
 
     public Role getRole(String token) {

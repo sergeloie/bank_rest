@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/admin/transfers")
 @PreAuthorize("hasRole('ADMIN')")
@@ -18,7 +20,7 @@ public class AdminTransferHistoryController {
 
     @GetMapping
     public ResponseEntity<Page<TransferHistoryResponse>> getAllTransfers(
-            @RequestParam(required = false) Long personId,
+            @RequestParam(required = false) UUID personId,
             Pageable pageable) {
         return ResponseEntity.ok(transferHistoryService.getTransfers(personId, pageable));
     }

@@ -7,13 +7,12 @@ databaseChangeLog:
         - createTable:
             columns:
               - column:
-                  autoIncrement: true
                   constraints:
                     nullable: false
                     primaryKey: true
                     primaryKeyName: pk_person
                   name: id
-                  type: BIGINT
+                  type: UUID
               - column:
                   constraints:
                     nullable: false
@@ -37,10 +36,10 @@ databaseChangeLog:
                   type: timestamp with time zone
               - column:
                   name: created_by
-                  type: BIGINT
+                  type: UUID
               - column:
                   name: modified_by
-                  type: BIGINT
+                  type: UUID
               - column:
                   name: password_version
                   type: BIGINT

@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +52,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void getPendingRequests_shouldReturnPage() throws Exception {
-        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.PENDING, null, null, null, null);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, UUID.randomUUID(), "**** **** **** 7890", UUID.randomUUID(), BlockRequestStatus.PENDING, null, null, null, null);
         when(cardBlockRequestService.getPendingRequests(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -63,7 +64,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void approveRequest_shouldReturn200() throws Exception {
-        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.APPROVED, null, null, null, null);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, UUID.randomUUID(), "**** **** **** 7890", UUID.randomUUID(), BlockRequestStatus.APPROVED, null, null, null, null);
         when(cardBlockRequestService.approveRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/admin/block-requests/1/approve"))
@@ -91,7 +92,7 @@ class CardBlockRequestControllerTest {
 
     @Test
     void rejectRequest_shouldReturn200() throws Exception {
-        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, 1L, "**** **** **** 7890", 1L, BlockRequestStatus.REJECTED, null, null, null, null);
+        CardBlockRequestAdminResponse dto = new CardBlockRequestAdminResponse(1L, UUID.randomUUID(), "**** **** **** 7890", UUID.randomUUID(), BlockRequestStatus.REJECTED, null, null, null, null);
         when(cardBlockRequestService.rejectRequest(1L)).thenReturn(dto);
 
         mockMvc.perform(patch("/api/admin/block-requests/1/reject"))

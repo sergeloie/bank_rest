@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/persons")
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class PersonController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<PersonAdminResponse> getPersonById(@PathVariable Long id) {
+    public ResponseEntity<PersonAdminResponse> getPersonById(@PathVariable UUID id) {
         return ResponseEntity.ok(personService.getById(id));
     }
 
@@ -39,7 +41,7 @@ public class PersonController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<PersonAdminResponse> updatePerson(@PathVariable Long id,
+    public ResponseEntity<PersonAdminResponse> updatePerson(@PathVariable UUID id,
                                                   @Valid @RequestBody PersonUpdateRequest request) {
         return ResponseEntity.ok(personService.update(id, request));
     }
@@ -47,7 +49,7 @@ public class PersonController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePerson(@PathVariable Long id) {
+    public void deletePerson(@PathVariable UUID id) {
         personService.delete(id);
     }
 }

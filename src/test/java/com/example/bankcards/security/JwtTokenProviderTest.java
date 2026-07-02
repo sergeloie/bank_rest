@@ -7,6 +7,8 @@ import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JwtTokenProviderTest {
@@ -30,7 +32,7 @@ class JwtTokenProviderTest {
 
         assertNotNull(token);
         Claims claims = jwtTokenProvider.validateToken(token);
-        assertEquals("1", claims.getSubject());
+        assertEquals(person.getId().toString(), claims.getSubject());
         assertEquals("ADMIN", claims.get("role", String.class));
         assertEquals("access", claims.get("type", String.class));
         assertEquals(0L, claims.get("passwordVersion", Long.class));
@@ -44,7 +46,7 @@ class JwtTokenProviderTest {
 
         assertNotNull(token);
         Claims claims = jwtTokenProvider.validateToken(token);
-        assertEquals("1", claims.getSubject());
+        assertEquals(person.getId().toString(), claims.getSubject());
         assertEquals("refresh", claims.get("type", String.class));
         assertEquals(0L, claims.get("passwordVersion", Long.class));
     }
@@ -56,11 +58,12 @@ class JwtTokenProviderTest {
 
     @Test
     void getPersonId_shouldExtractId() {
-        String token = jwtTokenProvider.generateAccessToken(createPerson());
+        Person person = createPerson();
+        String token = jwtTokenProvider.generateAccessToken(person);
 
-        Long personId = jwtTokenProvider.getPersonId(token);
+        UUID personId = jwtTokenProvider.getPersonId(token);
 
-        assertEquals(1L, personId);
+        assertEquals(person.getId(), personId);
     }
 
     @Test
@@ -95,7 +98,7 @@ class JwtTokenProviderTest {
 
     private Person createPerson() {
         Person p = new Person();
-        p.setId(1L);
+        p.setId(UUID.randomUUID());
         p.setName("admin");
         p.setPassword("pass");
         p.setRole(Role.ADMIN);

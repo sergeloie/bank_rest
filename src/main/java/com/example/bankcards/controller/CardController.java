@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/cards")
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class CardController {
     @PreAuthorize("hasRole('USER') and @cardSecurity.isOwnerByPersonId(#personId, authentication)")
     @GetMapping("/person/{personId}")
     public ResponseEntity<Page<CardResponse>> getMyCards(
-            @PathVariable Long personId,
+            @PathVariable UUID personId,
             @RequestParam(required = false) String status,
             Pageable pageable) {
         return ResponseEntity.ok(cardService.getCardsByPersonUser(personId, status, pageable));
@@ -32,14 +34,14 @@ public class CardController {
 
     @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
-    public ResponseEntity<CardResponse> getMyCardById(@PathVariable Long id) {
+    public ResponseEntity<CardResponse> getMyCardById(@PathVariable UUID id) {
         return ResponseEntity.ok(cardService.getCardByIdUser(id));
     }
 
     @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
     @PutMapping("/{id}/block-request")
     public ResponseEntity<CardBlockRequestResponse> requestBlock(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             Authentication authentication) {
         Person person = (Person) authentication.getPrincipal();
         CardBlockRequestRequest request = new CardBlockRequestRequest(id, person.getId());

@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,13 +37,16 @@ class TransferServiceTest {
 
     @Test
     void transfer_shouldTransferBetweenCards() {
-        Person person = createPerson(1L);
-        Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(200), 1L);
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card fromCard = createCard(fromCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        Card toCard = createCard(toCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(200), personId);
 
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
         CardTransferResponse result = transferService.transfer(request);
 
@@ -53,9 +57,11 @@ class TransferServiceTest {
 
     @Test
     void transfer_shouldThrowWhenSameCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        CardTransferRequest request = new CardTransferRequest(1L, 1L, BigDecimal.valueOf(100), 1L);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        CardTransferRequest request = new CardTransferRequest(cardId, cardId, BigDecimal.valueOf(100), personId);
 
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
         verifyNoInteractions(cardRepository);
@@ -63,91 +69,110 @@ class TransferServiceTest {
 
     @Test
     void transfer_shouldThrowWhenSourceCardNotFound() {
-        // fromCardId=99, toCardId=2 → locks 2 first, then 99
-        Person person = createPerson(1L);
-        Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
-        when(cardRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID toCardId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+        lenient().when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.empty());
+        lenient().when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.empty());
 
-        CardTransferRequest request = new CardTransferRequest(99L, 2L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId);
         assertThrows(ResourceNotFoundException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenTargetCardNotFound() {
-        // fromCardId=1, toCardId=99 → locks 1 first, then 99
-        Person person = createPerson(1L);
-        Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID toCardId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+        Person person = createPerson(personId);
+        Card fromCard = createCard(fromCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        lenient().when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        lenient().when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.empty());
 
-        CardTransferRequest request = new CardTransferRequest(1L, 99L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId);
         assertThrows(ResourceNotFoundException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenDifferentOwners() {
-        Person person1 = createPerson(1L);
-        Person person2 = createPerson(2L);
-        Card fromCard = createCard(1L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        UUID personId1 = UUID.randomUUID();
+        UUID personId2 = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person1 = createPerson(personId1);
+        Person person2 = createPerson(personId2);
+        Card fromCard = createCard(fromCardId, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        Card toCard = createCard(toCardId, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId1);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenPersonMismatch() {
-        Person person1 = createPerson(1L);
-        Person person2 = createPerson(2L);
-        Card fromCard = createCard(1L, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        UUID personId1 = UUID.randomUUID();
+        UUID personId2 = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person1 = createPerson(personId1);
+        Person person2 = createPerson(personId2);
+        Card fromCard = createCard(fromCardId, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        Card toCard = createCard(toCardId, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 99L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId2);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenSourceCardBlocked() {
-        Person person = createPerson(1L);
-        Card fromCard = createCard(1L, person, CardStatus.BLOCKED, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card fromCard = createCard(fromCardId, person, CardStatus.BLOCKED, BigDecimal.valueOf(500));
+        Card toCard = createCard(toCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenTargetCardBlocked() {
-        Person person = createPerson(1L);
-        Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(2L, person, CardStatus.BLOCKED, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card fromCard = createCard(fromCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
+        Card toCard = createCard(toCardId, person, CardStatus.BLOCKED, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
     @Test
     void transfer_shouldThrowWhenInsufficientFunds() {
-        Person person = createPerson(1L);
-        Card fromCard = createCard(1L, person, CardStatus.ACTIVE, BigDecimal.valueOf(50));
-        Card toCard = createCard(2L, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(toCard));
+        UUID personId = UUID.randomUUID();
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card fromCard = createCard(fromCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(50));
+        Card toCard = createCard(toCardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
+        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
 
-        CardTransferRequest request = new CardTransferRequest(1L, 2L, BigDecimal.valueOf(100), 1L);
+        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId);
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
     }
 
-    private Person createPerson(Long id) {
+    private Person createPerson(UUID id) {
         Person p = new Person();
         p.setId(id);
         p.setName("Alice");
@@ -156,7 +181,7 @@ class TransferServiceTest {
         return p;
     }
 
-    private Card createCard(Long id, Person person, CardStatus status, BigDecimal balance) {
+    private Card createCard(UUID id, Person person, CardStatus status, BigDecimal balance) {
         Card c = new Card();
         c.setId(id);
         c.setPerson(person);

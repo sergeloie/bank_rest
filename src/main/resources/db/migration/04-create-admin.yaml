@@ -7,6 +7,9 @@ databaseChangeLog:
             tableName: person
             columns:
               - column:
+                  name: id
+                  valueComputed: random_uuid()
+              - column:
                   name: name
                   value: admin
               - column:

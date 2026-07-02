@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,11 +57,12 @@ class CardControllerTest {
 
     @Test
     void getMyCards_shouldReturnPage() throws Exception {
-        CardResponse dto = new CardResponse(1L, "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardService.getCardsByPersonUser(eq(1L), any(), any()))
+        UUID personId = UUID.randomUUID();
+        CardResponse dto = new CardResponse(UUID.randomUUID(), "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardService.getCardsByPersonUser(eq(personId), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
-        mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
+        mockMvc.perform(get("/api/cards/person/" + personId).param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].maskedNumber").value("**** **** **** 7890"));
@@ -68,29 +70,32 @@ class CardControllerTest {
 
     @Test
     void getMyCards_shouldReturnEmptyPageWhenNoCards() throws Exception {
-        when(cardService.getCardsByPersonUser(eq(1L), any(), any()))
+        UUID personId = UUID.randomUUID();
+        when(cardService.getCardsByPersonUser(eq(personId), any(), any()))
                 .thenReturn(new PageImpl<>(java.util.List.of(), PageRequest.of(0, 10), 0));
 
-        mockMvc.perform(get("/api/cards/person/1").param("page", "0").param("size", "10"))
+        mockMvc.perform(get("/api/cards/person/" + personId).param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     @Test
     void getMyCardById_shouldReturnCard() throws Exception {
-        CardResponse dto = new CardResponse(1L, "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardService.getCardByIdUser(1L)).thenReturn(dto);
+        UUID cardId = UUID.randomUUID();
+        CardResponse dto = new CardResponse(cardId, "**** **** **** 7890", LocalDate.now().plusYears(1), CardStatus.ACTIVE, BigDecimal.valueOf(100));
+        when(cardService.getCardByIdUser(cardId)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/cards/1"))
+        mockMvc.perform(get("/api/cards/" + cardId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.maskedNumber").value("**** **** **** 7890"));
     }
 
     @Test
     void getMyCardById_shouldReturn404() throws Exception {
-        when(cardService.getCardByIdUser(99L)).thenThrow(new ResourceNotFoundException("Card not found"));
+        UUID cardId = UUID.randomUUID();
+        when(cardService.getCardByIdUser(cardId)).thenThrow(new ResourceNotFoundException("Card not found"));
 
-        mockMvc.perform(get("/api/cards/99"))
+        mockMvc.perform(get("/api/cards/" + cardId))
                 .andExpect(status().isNotFound());
     }
 }

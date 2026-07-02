@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -44,10 +45,10 @@ public class CardBlockRequest {
 
     @CreatedBy
     @Column(name = "created_by")
-    private Long createdBy;
+    private UUID createdBy;
 
     @LastModifiedBy
     @Column(name = "modified_by")
-    private Long modifiedBy;
+    private UUID modifiedBy;
 
 }

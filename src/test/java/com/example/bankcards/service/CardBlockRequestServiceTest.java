@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,13 +45,15 @@ class CardBlockRequestServiceTest {
 
     @Test
     void createRequest_shouldCreateBlockRequest() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(cardId, personId);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
 
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
         when(cardBlockRequestMapper.toEntity(request)).thenReturn(blockRequest);
         when(cardBlockRequestRepository.save(any(CardBlockRequest.class))).thenReturn(blockRequest);
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
@@ -65,46 +68,57 @@ class CardBlockRequestServiceTest {
 
     @Test
     void createRequest_shouldThrowWhenCardNotFound() {
-        CardBlockRequestRequest request = new CardBlockRequestRequest(99L, 1L);
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
+        UUID cardId = UUID.randomUUID();
+        UUID personId = UUID.randomUUID();
+        CardBlockRequestRequest request = new CardBlockRequestRequest(cardId, personId);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
     @Test
     void createRequest_shouldThrowWhenPersonNotFound() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 99L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(personRepository.findById(99L)).thenReturn(Optional.empty());
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(cardId, personId);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(personRepository.findById(personId)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
     @Test
     void createRequest_shouldThrowWhenCardDoesNotBelongToPerson() {
-        Person person1 = createPerson(1L);
-        Person person2 = createPerson(2L);
-        Card card = createCard(1L, person1, CardStatus.ACTIVE);
-        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 2L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(personRepository.findById(2L)).thenReturn(Optional.of(person2));
+        UUID personId1 = UUID.randomUUID();
+        UUID personId2 = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person1 = createPerson(personId1);
+        Person person2 = createPerson(personId2);
+        Card card = createCard(cardId, person1, CardStatus.ACTIVE);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(cardId, personId2);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(personRepository.findById(personId2)).thenReturn(Optional.of(person2));
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
     @Test
     void createRequest_shouldThrowWhenCardNotActive() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.BLOCKED);
-        CardBlockRequestRequest request = new CardBlockRequestRequest(1L, 1L);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.BLOCKED);
+        CardBlockRequestRequest request = new CardBlockRequestRequest(cardId, personId);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.createRequest(request));
     }
 
     @Test
     void getPendingRequests_shouldReturnPage() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findByBlockRequestStatus(eq(BlockRequestStatus.PENDING), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(blockRequest)));
@@ -119,8 +133,10 @@ class CardBlockRequestServiceTest {
 
     @Test
     void approveRequest_shouldApprovePendingRequest() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
@@ -135,8 +151,10 @@ class CardBlockRequestServiceTest {
 
     @Test
     void approveRequest_shouldThrowWhenNotPending() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.APPROVED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.approveRequest(1L));
@@ -150,8 +168,10 @@ class CardBlockRequestServiceTest {
 
     @Test
     void rejectRequest_shouldRejectPendingRequest() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
@@ -164,8 +184,10 @@ class CardBlockRequestServiceTest {
 
     @Test
     void rejectRequest_shouldThrowWhenNotPending() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.REJECTED);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
         assertThrows(InvalidCardOperationException.class, () -> cardBlockRequestService.rejectRequest(1L));
@@ -177,7 +199,7 @@ class CardBlockRequestServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> cardBlockRequestService.rejectRequest(99L));
     }
 
-    private Person createPerson(Long id) {
+    private Person createPerson(UUID id) {
         Person p = new Person();
         p.setId(id);
         p.setName("Alice");
@@ -186,7 +208,7 @@ class CardBlockRequestServiceTest {
         return p;
     }
 
-    private Card createCard(Long id, Person person, CardStatus status) {
+    private Card createCard(UUID id, Person person, CardStatus status) {
         Card c = new Card();
         c.setId(id);
         c.setPerson(person);

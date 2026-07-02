@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,55 +48,62 @@ class CardServiceTest {
 
     @Test
     void getCardsByPersonAdmin_shouldReturnAdminPage() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
+        UUID personId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE);
+        when(cardRepository.findByPerson_Id(eq(personId), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(card)));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(1L, null, PageRequest.of(0, 10));
+        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(personId, null, PageRequest.of(0, 10));
 
         assertEquals(1, result.getContent().size());
         assertEquals("**** **** **** 7890", result.getContent().get(0).maskedNumber());
-        assertEquals(1L, result.getContent().get(0).id());
+        assertEquals(card.getId(), result.getContent().get(0).id());
     }
 
     @Test
     void getCardsByPersonAdmin_shouldReturnEmptyPageWhenNoCards() {
-        when(cardRepository.findByPerson_Id(eq(1L), any(PageRequest.class)))
+        UUID personId = UUID.randomUUID();
+        when(cardRepository.findByPerson_Id(eq(personId), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(1L, null, PageRequest.of(0, 10));
+        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(personId, null, PageRequest.of(0, 10));
 
         assertTrue(result.isEmpty());
     }
 
     @Test
     void getCardByIdAdmin_shouldReturnCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardAdminResponse result = cardService.getCardByIdAdmin(1L);
+        CardAdminResponse result = cardService.getCardByIdAdmin(cardId);
 
-        assertEquals(1L, result.id());
+        assertEquals(cardId, result.id());
         assertEquals("**** **** **** 7890", result.maskedNumber());
     }
 
     @Test
     void getCardByIdAdmin_shouldThrowWhenNotFound() {
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> cardService.getCardByIdAdmin(99L));
+        UUID id = UUID.randomUUID();
+        when(cardRepository.findById(id)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> cardService.getCardByIdAdmin(id));
     }
 
     @Test
     void createCard_shouldCreateCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
         when(cardNumberGenerator.generate()).thenReturn("4000001234567890");
         when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
         when(cardEncryptionUtil.hash("4000001234567890")).thenReturn("hash");
@@ -103,7 +111,7 @@ class CardServiceTest {
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardAdminResponse result = cardService.createCard(new CardCreateRequest(1L, LocalDate.now().plusYears(1), BigDecimal.valueOf(100)));
+        CardAdminResponse result = cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100)));
 
         assertNotNull(result);
         assertEquals(CardStatus.ACTIVE, result.cardStatus());
@@ -112,26 +120,30 @@ class CardServiceTest {
 
     @Test
     void createCard_shouldThrowWhenPersonNotFound() {
-        when(personRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> cardService.createCard(new CardCreateRequest(99L, LocalDate.now().plusYears(1), BigDecimal.ZERO)));
+        UUID personId = UUID.randomUUID();
+        when(personRepository.findById(personId)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO)));
     }
 
     @Test
     void createCard_shouldThrowWhenExpirationInPast() {
-        Person person = createPerson(1L);
-        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
-        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(new CardCreateRequest(1L, LocalDate.now().minusDays(1), BigDecimal.ZERO)));
+        UUID personId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
+        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().minusDays(1), BigDecimal.ZERO)));
     }
 
     @Test
     void blockCard_shouldBlockActiveCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardAdminResponse result = cardService.blockCard(1L);
+        CardAdminResponse result = cardService.blockCard(cardId);
 
         assertNotNull(result);
         assertEquals(CardStatus.BLOCKED, card.getCardStatus());
@@ -139,27 +151,32 @@ class CardServiceTest {
 
     @Test
     void blockCard_shouldThrowWhenAlreadyBlocked() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.BLOCKED);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        assertThrows(InvalidCardOperationException.class, () -> cardService.blockCard(1L));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.BLOCKED);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        assertThrows(InvalidCardOperationException.class, () -> cardService.blockCard(cardId));
     }
 
     @Test
     void blockCard_shouldThrowWhenNotFound() {
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> cardService.blockCard(99L));
+        UUID id = UUID.randomUUID();
+        when(cardRepository.findById(id)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> cardService.blockCard(id));
     }
 
     @Test
     void activateCard_shouldActivateBlockedCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.BLOCKED);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.BLOCKED);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
         when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
 
-        CardAdminResponse result = cardService.activateCard(1L);
+        CardAdminResponse result = cardService.activateCard(cardId);
 
         assertNotNull(result);
         assertEquals(CardStatus.ACTIVE, card.getCardStatus());
@@ -167,28 +184,33 @@ class CardServiceTest {
 
     @Test
     void activateCard_shouldThrowWhenNotBlocked() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        assertThrows(InvalidCardOperationException.class, () -> cardService.activateCard(1L));
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        assertThrows(InvalidCardOperationException.class, () -> cardService.activateCard(cardId));
     }
 
     @Test
     void deleteCard_shouldDeleteCard() {
-        Person person = createPerson(1L);
-        Card card = createCard(1L, person, CardStatus.ACTIVE);
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        cardService.deleteCard(1L);
+        UUID personId = UUID.randomUUID();
+        UUID cardId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        Card card = createCard(cardId, person, CardStatus.ACTIVE);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        cardService.deleteCard(cardId);
         verify(cardRepository).delete(card);
     }
 
     @Test
     void deleteCard_shouldThrowWhenNotFound() {
-        when(cardRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> cardService.deleteCard(99L));
+        UUID id = UUID.randomUUID();
+        when(cardRepository.findById(id)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> cardService.deleteCard(id));
     }
 
-    private Person createPerson(Long id) {
+    private Person createPerson(UUID id) {
         Person p = new Person();
         p.setId(id);
         p.setName("Alice");
@@ -197,7 +219,7 @@ class CardServiceTest {
         return p;
     }
 
-    private Card createCard(Long id, Person person, CardStatus status) {
+    private Card createCard(UUID id, Person person, CardStatus status) {
         Card c = new Card();
         c.setId(id);
         c.setPerson(person);

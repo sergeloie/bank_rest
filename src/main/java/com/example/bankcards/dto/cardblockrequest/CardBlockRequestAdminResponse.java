@@ -3,16 +3,17 @@ package com.example.bankcards.dto.cardblockrequest;
 import com.example.bankcards.entity.BlockRequestStatus;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record CardBlockRequestAdminResponse(
     Long id,
-    Long cardId,
+    UUID cardId,
     String maskedCardNumber,
-    Long personId,
+    UUID personId,
     BlockRequestStatus blockRequestStatus,
     Instant createdDate,
     Instant lastModifiedDate,
-    Long createdBy,
-    Long modifiedBy
+    UUID createdBy,
+    UUID modifiedBy
 ) {
 }

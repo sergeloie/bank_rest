@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,9 +21,9 @@ import java.time.LocalDate;
 @EntityListeners(AuditingEntityListener.class)
 public class Card {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private UUID id;
 
     @Column(name = "encrypted_number", nullable = false)
     private String encryptedNumber;
@@ -54,11 +55,11 @@ public class Card {
 
     @CreatedBy
     @Column(name = "created_by")
-    private Long createdBy;
+    private UUID createdBy;
 
     @LastModifiedBy
     @Column(name = "modified_by")
-    private Long modifiedBy;
+    private UUID modifiedBy;
 
     @Version
     @Column(name = "version", nullable = false)

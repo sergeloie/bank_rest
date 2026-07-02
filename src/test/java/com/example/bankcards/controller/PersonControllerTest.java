@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +51,7 @@ class PersonControllerTest {
 
     @Test
     void getAllUsers_shouldReturnPage() throws Exception {
-        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
+        PersonAdminResponse dto = new PersonAdminResponse(UUID.randomUUID(), "Alice", Role.USER, null, null, null, null);
         when(personService.getAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1));
 
@@ -62,26 +63,28 @@ class PersonControllerTest {
 
     @Test
     void getUserById_shouldReturnPerson() throws Exception {
-        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
-        when(personService.getById(1L)).thenReturn(dto);
+        UUID id = UUID.randomUUID();
+        PersonAdminResponse dto = new PersonAdminResponse(id, "Alice", Role.USER, null, null, null, null);
+        when(personService.getById(id)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/admin/users/1"))
+        mockMvc.perform(get("/api/admin/users/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Alice"));
     }
 
     @Test
     void getUserById_shouldReturn404() throws Exception {
-        when(personService.getById(99L)).thenThrow(new ResourceNotFoundException("Person not found"));
+        UUID id = UUID.randomUUID();
+        when(personService.getById(id)).thenThrow(new ResourceNotFoundException("Person not found"));
 
-        mockMvc.perform(get("/api/admin/users/99"))
+        mockMvc.perform(get("/api/admin/users/" + id))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void createUser_shouldReturn201() throws Exception {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
-        PersonAdminResponse dto = new PersonAdminResponse(1L, "Alice", Role.USER, null, null, null, null);
+        PersonAdminResponse dto = new PersonAdminResponse(UUID.randomUUID(), "Alice", Role.USER, null, null, null, null);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/api/admin/users")
@@ -116,27 +119,30 @@ class PersonControllerTest {
 
     @Test
     void deleteUser_shouldReturn204() throws Exception {
-        doNothing().when(personService).delete(1L);
+        UUID id = UUID.randomUUID();
+        doNothing().when(personService).delete(id);
 
-        mockMvc.perform(delete("/api/admin/users/1"))
+        mockMvc.perform(delete("/api/admin/users/" + id))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteUser_shouldReturn404() throws Exception {
+        UUID id = UUID.randomUUID();
         org.mockito.Mockito.doThrow(new ResourceNotFoundException("Person not found"))
-                .when(personService).delete(99L);
+                .when(personService).delete(id);
 
-        mockMvc.perform(delete("/api/admin/users/99"))
+        mockMvc.perform(delete("/api/admin/users/" + id))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void deleteUser_shouldReturn400WhenPersonHasCards() throws Exception {
+        UUID id = UUID.randomUUID();
         org.mockito.Mockito.doThrow(new InvalidCardOperationException("Cannot delete person with existing cards"))
-                .when(personService).delete(1L);
+                .when(personService).delete(id);
 
-        mockMvc.perform(delete("/api/admin/users/1"))
+        mockMvc.perform(delete("/api/admin/users/" + id))
                 .andExpect(status().isBadRequest());
     }
 }

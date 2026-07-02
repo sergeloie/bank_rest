@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,9 +32,9 @@ class BusinessLogicAuditTest {
 
     private String adminToken;
     private String aliceToken;
-    private Long aliceId;
-    private Long card1Id;
-    private Long card2Id;
+    private UUID aliceId;
+    private UUID card1Id;
+    private UUID card2Id;
 
     @BeforeAll
     void setup() {
@@ -50,16 +51,16 @@ class BusinessLogicAuditTest {
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
-        aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", Long.class);
+        aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
         // Create Alice's cards
         var cardReq1 = new CardCreateRequest(aliceId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
         restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq1, authHeaders(adminToken)), Object.class);
-        card1Id = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ? AND balance = 100", Long.class, aliceId);
+        card1Id = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ? AND balance = 100", UUID.class, aliceId);
 
         var cardReq2 = new CardCreateRequest(aliceId, LocalDate.now().plusYears(1), BigDecimal.valueOf(50));
         restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq2, authHeaders(adminToken)), Object.class);
-        card2Id = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ? AND balance = 50", Long.class, aliceId);
+        card2Id = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ? AND balance = 50", UUID.class, aliceId);
     }
 
     private HttpHeaders authHeaders(String token) {
@@ -74,7 +75,7 @@ class BusinessLogicAuditTest {
         var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.ZERO, aliceId);
         HttpEntity<CardTransferRequest> entity = new HttpEntity<>(req, authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/transfers", HttpMethod.POST, entity, Void.class);
-        
+
         // Should be 400 Bad Request
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
@@ -84,7 +85,7 @@ class BusinessLogicAuditTest {
         var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.valueOf(-10), aliceId);
         HttpEntity<CardTransferRequest> entity = new HttpEntity<>(req, authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/transfers", HttpMethod.POST, entity, Void.class);
-        
+
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
 }
