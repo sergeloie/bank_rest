@@ -134,6 +134,15 @@ class CardServiceTest {
     }
 
     @Test
+    void createCard_shouldThrowWhenPersonIsAdmin() {
+        UUID personId = UUID.randomUUID();
+        Person person = createPerson(personId);
+        person.setRole(Role.ADMIN);
+        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
+        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO)));
+    }
+
+    @Test
     void blockCard_shouldBlockActiveCard() {
         UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();

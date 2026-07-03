@@ -6,6 +6,7 @@ import com.example.bankcards.dto.card.CardResponse;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Person;
+import com.example.bankcards.entity.Role;
 import org.springframework.util.StringUtils;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
@@ -85,6 +86,10 @@ public class CardService {
     public CardAdminResponse createCard(CardCreateRequest request) {
         Person person = personRepository.findById(request.personId())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(PERSON_NOT_FOUND, request.personId())));
+
+        if (person.getRole() == Role.ADMIN) {
+            throw new InvalidCardOperationException("Cannot create cards for admin users");
+        }
 
         if (request.expirationDate().isBefore(LocalDate.now(ZoneId.systemDefault()))) {
             throw new InvalidCardOperationException("Expiration date must not be in the past");
