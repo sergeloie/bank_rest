@@ -38,13 +38,10 @@ class NewFullIntegrationTest {
 
     @BeforeAll
     void setup() {
-        // Ensure admin password is known
         jdbcTemplate.update("UPDATE person SET password = ? WHERE name = 'admin'", passwordEncoder.encode("testadmin"));
 
-        // Login as Admin
         adminToken = login("admin", "testadmin");
 
-        // Create User
         var userReq = new PersonCreateRequest("User", "userpass");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, adminHeaders()), Void.class);
         userId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'User'", UUID.class);

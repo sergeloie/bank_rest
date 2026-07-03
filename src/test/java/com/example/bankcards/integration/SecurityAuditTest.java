@@ -48,24 +48,20 @@ class SecurityAuditTest {
                 "/api/auth/login", loginReq, AuthResponse.class);
         adminToken = loginResp.getBody().accessToken();
 
-        // Create Alice
         var aliceReq = new PersonCreateRequest("Alice", "pass123");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
         aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
-        // Create Bob
         var bobReq = new PersonCreateRequest("Bob", "pass456");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
         var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass456"), AuthResponse.class);
         bobToken = bobLogin.getBody().accessToken();
         bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
-        // Create Bob's card
         var cardReq = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
         var cardResp = restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq, authHeaders(adminToken)), Object.class);
-        // We know the ID will be 1 or something small, let's just query it
         bobCardId = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ?", UUID.class, bobId);
     }
 
@@ -78,7 +74,6 @@ class SecurityAuditTest {
 
     @Test
     void testAliceBlockBobCard_shouldFailPrivilegeCheck() {
-        // Alice should NOT be able to request block for Bob's card
         HttpEntity<Void> entity = new HttpEntity<>(authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange(
                 "/api/cards/" + bobCardId + "/block-request", HttpMethod.PUT, entity, Void.class);

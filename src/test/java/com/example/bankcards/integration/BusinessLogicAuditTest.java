@@ -46,14 +46,12 @@ class BusinessLogicAuditTest {
                 "/api/auth/login", loginReq, AuthResponse.class);
         adminToken = loginResp.getBody().accessToken();
 
-        // Create Alice
         var aliceReq = new PersonCreateRequest("Alice", "pass123");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
         aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
-        // Create Alice's cards
         var cardReq1 = new CardCreateRequest(aliceId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
         restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq1, authHeaders(adminToken)), Object.class);
         card1Id = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ? AND balance = 100", UUID.class, aliceId);
@@ -76,7 +74,6 @@ class BusinessLogicAuditTest {
         HttpEntity<CardTransferRequest> entity = new HttpEntity<>(req, authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/transfers", HttpMethod.POST, entity, Void.class);
 
-        // Should be 400 Bad Request
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
 

@@ -50,7 +50,6 @@ class ExceptionHandlingAuditTest {
         HttpEntity<PersonCreateRequest> entity = new HttpEntity<>(req, authHeaders(adminToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, entity, Void.class);
 
-        // Should be 400 Bad Request
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
 }
