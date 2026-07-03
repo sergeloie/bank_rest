@@ -18,9 +18,9 @@ spring:
 
 card:
   encryption:
-    secret: "1234567890123456"
+    secret: "BankCardAES256EncryptionKey2024!!"
   hash:
-    secret: "1234567890123456"
+    secret: "BankCardHmacSHA256HashSecretKey2024!"
 
 jwt:
   secret: "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gc2lnbmluZyE="

@@ -18,11 +18,11 @@ card:
   bin: "400000"
   retry-limit: 100
   encryption:
-    secret: "1234567890123456"
+    secret: "BankCardAES256EncryptionKey2024!!"
   hash:
-    secret: "1234567890123456"
+    secret: "BankCardHmacSHA256HashSecretKey2024!"
 
 jwt:
   secret: "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gc2lnbmluZyE="
-  access-expiration: 1800000
-  refresh-expiration: 604800000
+  access-expiration: 86400000 # 1 day
+  refresh-expiration: 2592000000 # 30 days
