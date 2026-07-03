@@ -28,11 +28,5 @@ card:
 
 jwt:
   secret: ${BANK_JWT_SECRET}
-  access-expiration: 1800000
-  refresh-expiration: 604800000
-
-#Что нужно сделать:
-#  - Указать настройки подключения к базе данных.
-#  - Указать порт приложения.
-#  - Настроить параметры безопасности и JWT.
-#  - Включить Swagger UI.
+  access-expiration: 86400000 # 1 day
+  refresh-expiration: 2592000000 # 30 days
