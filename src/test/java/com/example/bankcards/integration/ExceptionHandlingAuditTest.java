@@ -46,7 +46,7 @@ class ExceptionHandlingAuditTest {
 
     @Test
     void testCreatePersonWithInvalidData_shouldReturn400() {
-        var req = new PersonCreateRequest("", "", Role.USER);
+        var req = new PersonCreateRequest("", "");
         HttpEntity<PersonCreateRequest> entity = new HttpEntity<>(req, authHeaders(adminToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, entity, Void.class);
 

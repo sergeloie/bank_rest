@@ -47,7 +47,7 @@ class BusinessLogicAuditTest {
         adminToken = loginResp.getBody().accessToken();
 
         // Create Alice
-        var aliceReq = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        var aliceReq = new PersonCreateRequest("Alice", "pass123");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();

@@ -77,7 +77,7 @@ class PersonServiceTest {
 
     @Test
     void create_shouldCreatePerson() {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
         Person person = createPerson(UUID.randomUUID(), "Alice");
         PersonAdminResponse dto = createAdminResponse("Alice");
         when(personMapper.toEntity(request)).thenReturn(person);
@@ -92,7 +92,7 @@ class PersonServiceTest {
 
     @Test
     void create_shouldThrowOnDuplicateName() {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
         Person person = createPerson(UUID.randomUUID(), "Alice");
         when(personMapper.toEntity(request)).thenReturn(person);
         when(personRepository.save(person)).thenThrow(new DataIntegrityViolationException("duplicate"));

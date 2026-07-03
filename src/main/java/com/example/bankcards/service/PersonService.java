@@ -5,6 +5,7 @@ import com.example.bankcards.dto.person.PersonCreateRequest;
 import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Person;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
@@ -48,6 +49,7 @@ public class PersonService {
     @Transactional
     public PersonAdminResponse create(PersonCreateRequest request) {
         Person person = personMapper.toEntity(request);
+        person.setRole(Role.USER);
         person.setPassword(passwordEncoder.encode(request.password()));
         try {
             Person saved = personRepository.save(person);

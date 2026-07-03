@@ -49,14 +49,14 @@ class SecurityAuditTest {
         adminToken = loginResp.getBody().accessToken();
 
         // Create Alice
-        var aliceReq = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        var aliceReq = new PersonCreateRequest("Alice", "pass123");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
         aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
         // Create Bob
-        var bobReq = new PersonCreateRequest("Bob", "pass456", Role.USER);
+        var bobReq = new PersonCreateRequest("Bob", "pass456");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
         var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass456"), AuthResponse.class);
         bobToken = bobLogin.getBody().accessToken();

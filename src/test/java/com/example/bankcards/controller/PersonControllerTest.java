@@ -83,7 +83,7 @@ class PersonControllerTest {
 
     @Test
     void createUser_shouldReturn201() throws Exception {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
         PersonAdminResponse dto = new PersonAdminResponse(UUID.randomUUID(), "Alice", Role.USER, null, null, null, null);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
@@ -97,7 +97,7 @@ class PersonControllerTest {
 
     @Test
     void createUser_shouldReturn409OnDuplicate() throws Exception {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123", Role.USER);
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
         when(personService.create(any(PersonCreateRequest.class)))
                 .thenThrow(new DuplicateResourceException("Person already exists"));
 
@@ -109,7 +109,7 @@ class PersonControllerTest {
 
     @Test
     void createUser_shouldReturn400OnValidation() throws Exception {
-        PersonCreateRequest request = new PersonCreateRequest("", "", null);
+        PersonCreateRequest request = new PersonCreateRequest("", "");
 
         mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
