@@ -126,14 +126,6 @@ class CardServiceTest {
     }
 
     @Test
-    void createCard_shouldThrowWhenExpirationInPast() {
-        UUID personId = UUID.randomUUID();
-        Person person = createPerson(personId);
-        when(personRepository.findById(personId)).thenReturn(Optional.of(person));
-        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().minusDays(1), BigDecimal.ZERO)));
-    }
-
-    @Test
     void createCard_shouldThrowWhenPersonIsAdmin() {
         UUID personId = UUID.randomUUID();
         Person person = createPerson(personId);

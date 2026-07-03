@@ -23,8 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.UUID;
 
 @Slf4j
@@ -89,10 +87,6 @@ public class CardService {
 
         if (person.getRole() == Role.ADMIN) {
             throw new InvalidCardOperationException("Cannot create cards for admin users");
-        }
-
-        if (request.expirationDate().isBefore(LocalDate.now(ZoneId.systemDefault()))) {
-            throw new InvalidCardOperationException("Expiration date must not be in the past");
         }
 
         String plainNumber = cardNumberGenerator.generate();
