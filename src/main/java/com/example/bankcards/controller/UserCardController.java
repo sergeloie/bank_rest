@@ -18,12 +18,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/cards")
+@PreAuthorize("hasRole('USER')")
 @RequiredArgsConstructor
-public class CardController {
+public class UserCardController {
     private final CardService cardService;
     private final CardBlockRequestService cardBlockRequestService;
 
-    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwnerByPersonId(#personId, authentication)")
+    @PreAuthorize("@cardSecurity.isOwnerByPersonId(#personId, authentication)")
     @GetMapping("/person/{personId}")
     public ResponseEntity<Page<CardResponse>> getMyCards(
             @PathVariable UUID personId,
@@ -32,13 +33,13 @@ public class CardController {
         return ResponseEntity.ok(cardService.getCardsByPersonUser(personId, status, pageable));
     }
 
-    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
+    @PreAuthorize("@cardSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<CardResponse> getMyCardById(@PathVariable UUID id) {
         return ResponseEntity.ok(cardService.getCardByIdUser(id));
     }
 
-    @PreAuthorize("hasRole('USER') and @cardSecurity.isOwner(#id, authentication)")
+    @PreAuthorize("@cardSecurity.isOwner(#id, authentication)")
     @PutMapping("/{id}/block-request")
     public ResponseEntity<CardBlockRequestResponse> requestBlock(
             @PathVariable UUID id,

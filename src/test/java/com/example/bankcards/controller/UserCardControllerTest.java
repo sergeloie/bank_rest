@@ -30,9 +30,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CardController.class)
+@WebMvcTest(controllers = UserCardController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class CardControllerTest {
+class UserCardControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

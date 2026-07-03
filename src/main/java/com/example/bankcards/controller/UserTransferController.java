@@ -11,15 +11,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/transfers")
+@PreAuthorize("hasRole('USER')")
 @RequiredArgsConstructor
-public class TransferController {
+public class UserTransferController {
     private final TransferService transferService;
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<CardTransferResponse> transfer(
             @Valid @RequestBody CardTransferRequest request,

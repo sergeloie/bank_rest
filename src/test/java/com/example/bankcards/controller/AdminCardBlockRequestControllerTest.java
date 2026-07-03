@@ -28,9 +28,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CardBlockRequestController.class)
+@WebMvcTest(controllers = AdminCardBlockRequestController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class CardBlockRequestControllerTest {
+class AdminCardBlockRequestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

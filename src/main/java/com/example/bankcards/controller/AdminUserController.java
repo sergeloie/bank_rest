@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
+import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.service.PersonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,12 @@ public class AdminUserController {
     @PostMapping
     public ResponseEntity<PersonAdminResponse> createUser(@Valid @RequestBody PersonCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(personService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PersonAdminResponse> updateUser(@PathVariable UUID id,
+                                                          @Valid @RequestBody PersonUpdateRequest request) {
+        return ResponseEntity.ok(personService.update(id, request));
     }
 
     @DeleteMapping("/{id}")

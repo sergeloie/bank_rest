@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
+import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.DuplicateResourceException;
 import com.example.bankcards.exception.InvalidCardOperationException;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class PersonControllerTest {
+class AdminUserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -115,6 +116,33 @@ class PersonControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateUser_shouldReturn200() throws Exception {
+        UUID id = UUID.randomUUID();
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
+        PersonAdminResponse dto = new PersonAdminResponse(id, "Alice", Role.ADMIN, null, null, null, null);
+        when(personService.update(any(UUID.class), any(PersonUpdateRequest.class))).thenReturn(dto);
+
+        mockMvc.perform(put("/api/admin/users/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test
+    void updateUser_shouldReturn404() throws Exception {
+        UUID id = UUID.randomUUID();
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
+        when(personService.update(any(UUID.class), any(PersonUpdateRequest.class)))
+                .thenThrow(new ResourceNotFoundException("Person not found"));
+
+        mockMvc.perform(put("/api/admin/users/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
     }
 
     @Test

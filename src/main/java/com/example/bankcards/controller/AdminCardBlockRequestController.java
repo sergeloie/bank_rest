@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin/block-requests")
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
-public class CardBlockRequestController {
+public class AdminCardBlockRequestController {
     private final CardBlockRequestService cardBlockRequestService;
 
     @GetMapping("/pending")
