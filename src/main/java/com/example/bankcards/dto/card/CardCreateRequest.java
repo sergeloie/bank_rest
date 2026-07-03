@@ -1,7 +1,6 @@
 package com.example.bankcards.dto.card;
 
 import com.example.bankcards.entity.Card;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
@@ -10,10 +9,13 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * DTO for {@link Card}
+ * Request to create a new card for a person with an expiration date and optional balance.
+ *
+ * @param personId       UUID of the card owner. Must not be null.
+ * @param expirationDate Card expiration date. Must not be null. Must be in the future.
+ * @param balance        Initial card balance. May be null (defaults to zero). Must be >= 0.
  */
 public record CardCreateRequest(@NotNull(message = "Person id must be specified") UUID personId,
-                                @NotNull(message = "Card expiration date must be specified")
-                                @Future(message = "Card expiration date must be in the future") LocalDate expirationDate,
+                                @NotNull(message = "Card expiration date must be specified") LocalDate expirationDate,
                                 @PositiveOrZero BigDecimal balance) {
 }

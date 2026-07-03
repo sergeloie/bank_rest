@@ -33,7 +33,6 @@ public class TransferService {
             throw new InvalidCardOperationException("Cannot transfer to the same card");
         }
 
-        // Deterministic lock order: lock lower ID first to prevent deadlock
         UUID firstId = request.fromCardId().compareTo(request.toCardId()) < 0 ? request.fromCardId() : request.toCardId();
         UUID secondId = request.fromCardId().compareTo(request.toCardId()) < 0 ? request.toCardId() : request.fromCardId();
 
