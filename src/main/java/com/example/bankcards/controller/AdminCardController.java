@@ -39,12 +39,12 @@ public class AdminCardController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(request));
     }
 
-    @PutMapping("/{id}/block")
+    @PatchMapping("/{id}/block")
     public ResponseEntity<CardAdminResponse> blockCard(@PathVariable UUID id) {
         return ResponseEntity.ok(cardService.blockCard(id));
     }
 
-    @PutMapping("/{id}/activate")
+    @PatchMapping("/{id}/activate")
     public ResponseEntity<CardAdminResponse> activateCard(@PathVariable UUID id) {
         return ResponseEntity.ok(cardService.activateCard(id));
     }

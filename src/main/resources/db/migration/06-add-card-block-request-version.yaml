@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: '6'
+      author: developer
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addColumn:
+            tableName: card_block_request
+            columns:
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

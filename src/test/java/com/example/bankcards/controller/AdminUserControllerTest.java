@@ -84,7 +84,7 @@ class AdminUserControllerTest {
 
     @Test
     void createUser_shouldReturn201() throws Exception {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass1234");
         PersonAdminResponse dto = new PersonAdminResponse(UUID.randomUUID(), "Alice", Role.USER, null, null, null, null);
         when(personService.create(any(PersonCreateRequest.class))).thenReturn(dto);
 
@@ -98,7 +98,7 @@ class AdminUserControllerTest {
 
     @Test
     void createUser_shouldReturn409OnDuplicate() throws Exception {
-        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
+        PersonCreateRequest request = new PersonCreateRequest("Alice", "pass1234");
         when(personService.create(any(PersonCreateRequest.class)))
                 .thenThrow(new DuplicateResourceException("Person already exists"));
 

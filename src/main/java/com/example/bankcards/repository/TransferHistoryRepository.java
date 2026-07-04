@@ -11,4 +11,7 @@ import java.util.UUID;
 public interface TransferHistoryRepository extends JpaRepository<TransferHistory, Long> {
     @EntityGraph(attributePaths = {"person", "fromCard", "toCard"})
     Page<TransferHistory> findByPerson_Id(UUID personId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"person", "fromCard", "toCard"})
+    Page<TransferHistory> findAll(Pageable pageable);
 }

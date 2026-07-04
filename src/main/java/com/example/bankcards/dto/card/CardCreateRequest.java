@@ -1,6 +1,5 @@
 package com.example.bankcards.dto.card;
 
-import com.example.bankcards.entity.Card;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;

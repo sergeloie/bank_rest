@@ -5,7 +5,7 @@ import com.example.bankcards.dto.auth.AuthResponse;
 import com.example.bankcards.dto.auth.RefreshRequest;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
-import com.example.bankcards.exception.InvalidCardOperationException;
+import com.example.bankcards.exception.AuthenticationFailedException;
 import com.example.bankcards.repository.PersonRepository;
 import com.example.bankcards.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class AuthServiceTest {
         when(personRepository.findByName("unknown")).thenReturn(Optional.empty());
 
         AuthRequest request = new AuthRequest("unknown", "pass");
-        assertThrows(InvalidCardOperationException.class, () -> authService.login(request));
+        assertThrows(AuthenticationFailedException.class, () -> authService.login(request));
     }
 
     @Test
@@ -67,7 +67,7 @@ class AuthServiceTest {
         when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
 
         AuthRequest request = new AuthRequest("admin", "wrong");
-        assertThrows(InvalidCardOperationException.class, () -> authService.login(request));
+        assertThrows(AuthenticationFailedException.class, () -> authService.login(request));
     }
 
     @Test
@@ -92,7 +92,27 @@ class AuthServiceTest {
         when(jwtTokenProvider.validateToken("bad-token")).thenThrow(new RuntimeException("invalid"));
 
         RefreshRequest request = new RefreshRequest("bad-token");
-        assertThrows(InvalidCardOperationException.class, () -> authService.refresh(request));
+        assertThrows(AuthenticationFailedException.class, () -> authService.refresh(request));
+    }
+
+    @Test
+    void refresh_shouldThrowWhenNotRefreshToken() {
+        when(jwtTokenProvider.validateToken("access-token")).thenAnswer(i -> null);
+        when(jwtTokenProvider.isRefreshToken("access-token")).thenReturn(false);
+
+        RefreshRequest request = new RefreshRequest("access-token");
+        assertThrows(AuthenticationFailedException.class, () -> authService.refresh(request));
+    }
+
+    @Test
+    void refresh_shouldThrowWhenUserNotFound() {
+        when(jwtTokenProvider.validateToken("refresh-token")).thenAnswer(i -> null);
+        when(jwtTokenProvider.isRefreshToken("refresh-token")).thenReturn(true);
+        when(jwtTokenProvider.getPersonId("refresh-token")).thenReturn(UUID.randomUUID());
+        when(personRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        RefreshRequest request = new RefreshRequest("refresh-token");
+        assertThrows(AuthenticationFailedException.class, () -> authService.refresh(request));
     }
 
     private Person createPerson() {

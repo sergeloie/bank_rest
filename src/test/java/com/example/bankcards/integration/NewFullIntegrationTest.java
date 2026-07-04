@@ -42,10 +42,10 @@ class NewFullIntegrationTest {
 
         adminToken = login("admin", "testadmin");
 
-        var userReq = new PersonCreateRequest("User", "userpass");
+        var userReq = new PersonCreateRequest("User", "userpass1");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, adminHeaders()), Void.class);
         userId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'User'", UUID.class);
-        userToken = login("User", "userpass");
+        userToken = login("User", "userpass1");
     }
 
     private String login(String name, String password) {
@@ -86,7 +86,7 @@ class NewFullIntegrationTest {
     @Test
     @Order(3)
     void adminCanCreateAndDeleteUser() {
-        var userReq = new PersonCreateRequest("NewUser", "pass");
+        var userReq = new PersonCreateRequest("NewUser", "pass1234");
         var createResp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, adminHeaders()), Void.class);
         assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
 
@@ -98,7 +98,7 @@ class NewFullIntegrationTest {
     @Test
     @Order(4)
     void userCannotCreateUser() {
-        var userReq = new PersonCreateRequest("Hacker", "pass");
+        var userReq = new PersonCreateRequest("Hacker", "pass1234");
         var resp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, userHeaders()), Void.class);
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode());
     }

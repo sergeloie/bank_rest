@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/migration/04-create-admin.yaml
   - include:
       file: db/migration/05-create-transfer-history.yaml
+  - include:
+      file: db/migration/06-add-card-block-request-version.yaml

@@ -48,15 +48,15 @@ class SecurityAuditTest {
                 "/api/auth/login", loginReq, AuthResponse.class);
         adminToken = loginResp.getBody().accessToken();
 
-        var aliceReq = new PersonCreateRequest("Alice", "pass123");
+        var aliceReq = new PersonCreateRequest("Alice", "pass1234");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
-        var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
+        var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass1234"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
         aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
-        var bobReq = new PersonCreateRequest("Bob", "pass456");
+        var bobReq = new PersonCreateRequest("Bob", "pass4567");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
-        var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass456"), AuthResponse.class);
+        var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass4567"), AuthResponse.class);
         bobToken = bobLogin.getBody().accessToken();
         bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
@@ -78,7 +78,6 @@ class SecurityAuditTest {
         ResponseEntity<Void> resp = restTemplate.exchange(
                 "/api/cards/" + bobCardId + "/block-request", HttpMethod.PUT, entity, Void.class);
 
-        System.out.println("Block card status: " + resp.getStatusCode());
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(), "Should be forbidden for Alice to block Bob's card");
     }
 
@@ -88,7 +87,6 @@ class SecurityAuditTest {
         ResponseEntity<Void> resp = restTemplate.exchange(
                 "/api/admin/users", HttpMethod.GET, entity, Void.class);
 
-        System.out.println("Admin users status: " + resp.getStatusCode());
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(), "Should be forbidden for Alice to access admin endpoint");
     }
 }

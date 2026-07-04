@@ -17,25 +17,41 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
         log.warn("Resource not found: {}", ex.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        pd.setTitle("Not Found");
+        return pd;
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
     public ProblemDetail handleConflict(DuplicateResourceException ex) {
         log.warn("Duplicate resource: {}", ex.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        pd.setTitle("Conflict");
+        return pd;
     }
 
     @ExceptionHandler(InvalidCardOperationException.class)
     public ProblemDetail handleInvalidOperation(InvalidCardOperationException ex) {
         log.warn("Invalid card operation: {}", ex.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        pd.setTitle("Bad Request");
+        return pd;
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ProblemDetail handleAuthenticationFailed(AuthenticationFailedException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        pd.setTitle("Unauthorized");
+        return pd;
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+        pd.setTitle("Forbidden");
+        return pd;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -44,7 +60,9 @@ public class GlobalExceptionHandler {
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         log.warn("Validation failed: {}", msg);
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, msg);
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, msg);
+        pd.setTitle("Bad Request");
+        return pd;
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -53,15 +71,26 @@ public class GlobalExceptionHandler {
                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                 .collect(Collectors.joining(", "));
         log.warn("Constraint violation: {}", msg);
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, msg);
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, msg);
+        pd.setTitle("Bad Request");
+        return pd;
+    }
+
+    @ExceptionHandler(CardNumberGenerationException.class)
+    public ProblemDetail handleCardNumberGeneration(CardNumberGenerationException ex) {
+        log.error("Card number generation failed", ex);
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "Unable to generate unique card number");
+        pd.setTitle("Conflict");
+        return pd;
     }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);
-        return ProblemDetail.forStatusAndDetail(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Internal server error"
-        );
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        pd.setTitle("Internal Server Error");
+        return pd;
     }
 }

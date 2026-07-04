@@ -51,4 +51,7 @@ public class CardBlockRequest {
     @Column(name = "modified_by")
     private UUID modifiedBy;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

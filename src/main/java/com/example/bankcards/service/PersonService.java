@@ -67,7 +67,9 @@ public class PersonService {
             person.setPasswordVersion(person.getPasswordVersion() + 1);
             log.info("Password changed for person: id={}", id);
         }
-        return personMapper.toAdminResponse(personRepository.save(person));
+        PersonAdminResponse response = personMapper.toAdminResponse(personRepository.save(person));
+        log.info("Person updated: id={}", id);
+        return response;
     }
 
     @Transactional

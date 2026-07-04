@@ -25,8 +25,8 @@ public class TransferService {
 
     @Transactional
     public CardTransferResponse transfer(CardTransferRequest request) {
-        log.info("Transfer initiated: fromCard={}, toCard={}, amount={}, personId={}",
-                request.fromCardId(), request.toCardId(), request.amount(), request.personId());
+        log.info("Transfer initiated: fromCard={}, toCard={}, personId={}",
+                request.fromCardId(), request.toCardId(), request.personId());
 
         if (request.fromCardId().equals(request.toCardId())) {
             log.warn("Transfer rejected: cannot transfer to the same card (cardId={})", request.fromCardId());

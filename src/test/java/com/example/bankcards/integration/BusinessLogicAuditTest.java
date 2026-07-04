@@ -46,9 +46,9 @@ class BusinessLogicAuditTest {
                 "/api/auth/login", loginReq, AuthResponse.class);
         adminToken = loginResp.getBody().accessToken();
 
-        var aliceReq = new PersonCreateRequest("Alice", "pass123");
+        var aliceReq = new PersonCreateRequest("Alice", "pass1234");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
-        var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass123"), AuthResponse.class);
+        var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass1234"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
         aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
