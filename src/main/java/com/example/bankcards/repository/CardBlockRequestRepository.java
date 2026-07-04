@@ -10,4 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CardBlockRequestRepository extends JpaRepository<CardBlockRequest, Long> {
     @EntityGraph(attributePaths = {"card", "person"})
     Page<CardBlockRequest> findByBlockRequestStatus(BlockRequestStatus blockRequestStatus, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"card", "person"})
+    java.util.Optional<CardBlockRequest> findById(Long id);
 }

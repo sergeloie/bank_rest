@@ -30,3 +30,7 @@ jwt:
   secret: ${BANK_JWT_SECRET}
   access-expiration: 86400000 # 1 day
   refresh-expiration: 2592000000 # 30 days
+
+app:
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:8080"

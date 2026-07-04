@@ -101,8 +101,7 @@ public class CardBlockRequestService {
     }
 
     private String computeMaskedNumber(Card card) {
-        String plainNumber = cardEncryptionUtil.decrypt(card.getEncryptedNumber());
-        return cardMaskUtil.mask(plainNumber);
+        return cardMaskUtil.decryptAndMask(card.getEncryptedNumber());
     }
 
     private CardBlockRequestAdminResponse toAdminResponse(CardBlockRequest entity) {

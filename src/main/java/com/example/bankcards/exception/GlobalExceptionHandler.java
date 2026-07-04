@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CardNumberGenerationException.class)
     public ProblemDetail handleCardNumberGeneration(CardNumberGenerationException ex) {
-        log.error("Card number generation failed", ex);
+        log.warn("Card number generation failed", ex);
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, "Unable to generate unique card number");
         pd.setTitle("Conflict");

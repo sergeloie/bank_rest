@@ -53,8 +53,7 @@ class CardServiceTest {
         Person person = createPerson(personId);
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardAdminResponse result = cardService.getCardByIdAdmin(cardId);
 
@@ -80,8 +79,7 @@ class CardServiceTest {
         when(cardEncryptionUtil.encrypt("4000001234567890")).thenReturn("encrypted");
         when(cardEncryptionUtil.hash("4000001234567890")).thenReturn("hash");
         when(cardRepository.save(any(Card.class))).thenReturn(card);
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardAdminResponse result = cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100)));
 
@@ -113,8 +111,7 @@ class CardServiceTest {
         Person person = createPerson(personId);
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardAdminResponse result = cardService.blockCard(cardId);
 
@@ -146,8 +143,7 @@ class CardServiceTest {
         Person person = createPerson(personId);
         Card card = createCard(cardId, person, CardStatus.BLOCKED);
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardAdminResponse result = cardService.activateCard(cardId);
 

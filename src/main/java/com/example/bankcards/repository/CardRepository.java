@@ -36,4 +36,7 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
 
     @EntityGraph(attributePaths = {"person"})
     Page<Card> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"person"})
+    Optional<Card> findById(UUID id);
 }

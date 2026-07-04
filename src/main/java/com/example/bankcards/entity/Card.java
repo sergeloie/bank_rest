@@ -25,10 +25,10 @@ public class Card {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "encrypted_number", nullable = false)
+    @Column(name = "encrypted_number", nullable = false, unique = true)
     private String encryptedNumber;
 
-    @Column(name = "card_hash", nullable = false)
+    @Column(name = "card_hash", nullable = false, unique = true)
     private String cardHash;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -83,21 +83,31 @@ public class CardService {
             throw new InvalidCardOperationException("Cannot create cards for admin users");
         }
 
-        String plainNumber = cardNumberGenerator.generate();
-        String encryptedNumber = cardEncryptionUtil.encrypt(plainNumber);
-        String cardHash = cardEncryptionUtil.hash(plainNumber);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                String plainNumber = cardNumberGenerator.generate();
+                String encryptedNumber = cardEncryptionUtil.encrypt(plainNumber);
+                String cardHash = cardEncryptionUtil.hash(plainNumber);
 
-        Card card = new Card();
-        card.setPerson(person);
-        card.setExpirationDate(request.expirationDate());
-        card.setEncryptedNumber(encryptedNumber);
-        card.setCardHash(cardHash);
-        card.setCardStatus(CardStatus.ACTIVE);
-        card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
+                Card card = new Card();
+                card.setPerson(person);
+                card.setExpirationDate(request.expirationDate());
+                card.setEncryptedNumber(encryptedNumber);
+                card.setCardHash(cardHash);
+                card.setCardStatus(CardStatus.ACTIVE);
+                card.setBalance(request.balance() != null ? request.balance() : BigDecimal.ZERO);
 
-        Card saved = cardRepository.save(card);
-        log.info("Card created: id={}, personId={}", saved.getId(), person.getId());
-        return toAdminResponse(saved);
+                Card saved = cardRepository.save(card);
+                log.info("Card created: id={}, personId={}", saved.getId(), person.getId());
+                return toAdminResponse(saved);
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                if (attempt == 2) {
+                    throw new com.example.bankcards.exception.CardNumberGenerationException("Failed to generate unique card number after 3 attempts", e);
+                }
+                log.warn("Card hash collision on attempt {}, retrying", attempt + 1);
+            }
+        }
+        throw new com.example.bankcards.exception.CardNumberGenerationException("Failed to generate unique card number");
     }
 
     @Transactional
@@ -144,13 +154,8 @@ public class CardService {
         return cardRepository.findByPerson_Id(personId, pageable);
     }
 
-    private String computeMaskedNumber(Card card) {
-        String plainNumber = cardEncryptionUtil.decrypt(card.getEncryptedNumber());
-        return cardMaskUtil.mask(plainNumber);
-    }
-
     private CardAdminResponse toAdminResponse(Card card) {
-        String masked = computeMaskedNumber(card);
+        String masked = cardMaskUtil.decryptAndMask(card.getEncryptedNumber());
         return new CardAdminResponse(
                 card.getId(),
                 card.getPerson().getId(),
@@ -167,7 +172,7 @@ public class CardService {
     }
 
     private CardResponse toUserResponse(Card card) {
-        String masked = computeMaskedNumber(card);
+        String masked = cardMaskUtil.decryptAndMask(card.getEncryptedNumber());
         return new CardResponse(
                 card.getId(),
                 masked,

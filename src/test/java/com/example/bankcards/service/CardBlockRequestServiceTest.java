@@ -56,8 +56,7 @@ class CardBlockRequestServiceTest {
         when(personRepository.findById(personId)).thenReturn(Optional.of(person));
         when(cardBlockRequestMapper.toEntity(request)).thenReturn(blockRequest);
         when(cardBlockRequestRepository.save(any(CardBlockRequest.class))).thenReturn(blockRequest);
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardBlockRequestResponse result = cardBlockRequestService.createRequest(request);
 
@@ -122,8 +121,7 @@ class CardBlockRequestServiceTest {
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findByBlockRequestStatus(eq(BlockRequestStatus.PENDING), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(blockRequest)));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         Page<CardBlockRequestAdminResponse> result = cardBlockRequestService.getPendingRequests(PageRequest.of(0, 10));
 
@@ -139,8 +137,7 @@ class CardBlockRequestServiceTest {
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardBlockRequestAdminResponse result = cardBlockRequestService.approveRequest(1L);
 
@@ -174,8 +171,7 @@ class CardBlockRequestServiceTest {
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         CardBlockRequest blockRequest = createBlockRequest(1L, card, person, BlockRequestStatus.PENDING);
         when(cardBlockRequestRepository.findById(1L)).thenReturn(Optional.of(blockRequest));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
+        when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
 
         CardBlockRequestAdminResponse result = cardBlockRequestService.rejectRequest(1L);
 

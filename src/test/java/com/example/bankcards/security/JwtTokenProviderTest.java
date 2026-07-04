@@ -22,6 +22,7 @@ class JwtTokenProviderTest {
         props.setAccessExpiration(1800000);
         props.setRefreshExpiration(604800000);
         jwtTokenProvider = new JwtTokenProvider(props);
+        jwtTokenProvider.init();
     }
 
     @Test

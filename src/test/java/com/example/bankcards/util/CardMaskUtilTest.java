@@ -6,10 +6,11 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class CardMaskUtilTest {
 
-    private final CardMaskUtil cardMaskUtil = new CardMaskUtil();
+    private final CardMaskUtil cardMaskUtil = new CardMaskUtil(mock(CardEncryptionUtil.class));
 
     @ParameterizedTest
     @CsvSource({
