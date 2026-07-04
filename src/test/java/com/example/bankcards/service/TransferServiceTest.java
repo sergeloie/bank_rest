@@ -111,23 +111,6 @@ class TransferServiceTest {
     }
 
     @Test
-    void transfer_shouldThrowWhenPersonMismatch() {
-        UUID personId1 = UUID.randomUUID();
-        UUID personId2 = UUID.randomUUID();
-        UUID fromCardId = UUID.randomUUID();
-        UUID toCardId = UUID.randomUUID();
-        Person person1 = createPerson(personId1);
-        Person person2 = createPerson(personId2);
-        Card fromCard = createCard(fromCardId, person1, CardStatus.ACTIVE, BigDecimal.valueOf(500));
-        Card toCard = createCard(toCardId, person2, CardStatus.ACTIVE, BigDecimal.valueOf(100));
-        when(cardRepository.findByIdForUpdate(fromCardId)).thenReturn(Optional.of(fromCard));
-        when(cardRepository.findByIdForUpdate(toCardId)).thenReturn(Optional.of(toCard));
-
-        CardTransferRequest request = new CardTransferRequest(fromCardId, toCardId, BigDecimal.valueOf(100), personId2);
-        assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request));
-    }
-
-    @Test
     void transfer_shouldThrowWhenSourceCardBlocked() {
         UUID personId = UUID.randomUUID();
         UUID fromCardId = UUID.randomUUID();

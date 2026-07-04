@@ -67,15 +67,6 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    void getRole_shouldExtractRole() {
-        String token = jwtTokenProvider.generateAccessToken(createPerson());
-
-        Role role = jwtTokenProvider.getRole(token);
-
-        assertEquals(Role.ADMIN, role);
-    }
-
-    @Test
     void isRefreshToken_shouldReturnTrueForRefresh() {
         String refreshToken = jwtTokenProvider.generateRefreshToken(createPerson());
         String accessToken = jwtTokenProvider.generateAccessToken(createPerson());

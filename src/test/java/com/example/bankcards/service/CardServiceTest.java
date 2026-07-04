@@ -47,34 +47,6 @@ class CardServiceTest {
     private CardService cardService;
 
     @Test
-    void getCardsByPersonAdmin_shouldReturnAdminPage() {
-        UUID personId = UUID.randomUUID();
-        Person person = createPerson(personId);
-        Card card = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE);
-        when(cardRepository.findByPerson_Id(eq(personId), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(card)));
-        when(cardEncryptionUtil.decrypt("encrypted")).thenReturn("4000001234567890");
-        when(cardMaskUtil.mask("4000001234567890")).thenReturn("**** **** **** 7890");
-
-        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(personId, null, PageRequest.of(0, 10));
-
-        assertEquals(1, result.getContent().size());
-        assertEquals("**** **** **** 7890", result.getContent().get(0).maskedNumber());
-        assertEquals(card.getId(), result.getContent().get(0).id());
-    }
-
-    @Test
-    void getCardsByPersonAdmin_shouldReturnEmptyPageWhenNoCards() {
-        UUID personId = UUID.randomUUID();
-        when(cardRepository.findByPerson_Id(eq(personId), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of()));
-
-        Page<CardAdminResponse> result = cardService.getCardsByPersonAdmin(personId, null, PageRequest.of(0, 10));
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
     void getCardByIdAdmin_shouldReturnCard() {
         UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();

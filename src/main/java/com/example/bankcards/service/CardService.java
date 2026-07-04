@@ -38,12 +38,6 @@ public class CardService {
     private static final String CARD_NOT_FOUND = "Card not found with id: %s";
 
     @Transactional(readOnly = true)
-    public Page<CardAdminResponse> getCardsByPersonAdmin(UUID personId, String status, Pageable pageable) {
-        return getCardsByPersonInternal(personId, status, pageable)
-                .map(this::toAdminResponse);
-    }
-
-    @Transactional(readOnly = true)
     public Page<CardAdminResponse> getAllCardsAdmin(UUID personId, String status, Pageable pageable) {
         Page<Card> cards;
         if (personId != null && StringUtils.hasText(status)) {

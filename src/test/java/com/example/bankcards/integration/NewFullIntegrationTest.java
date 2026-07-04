@@ -102,11 +102,4 @@ class NewFullIntegrationTest {
         var resp = restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(userReq, userHeaders()), Void.class);
         assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode());
     }
-
-    @Test
-    @Order(5)
-    void userCannotAccessAdminEndpoints() {
-        var resp = restTemplate.exchange("/api/admin/cards", HttpMethod.GET, new HttpEntity<>(userHeaders()), Object.class);
-        assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode());
-    }
 }

@@ -2,7 +2,6 @@ package com.example.bankcards.service;
 
 import com.example.bankcards.dto.person.PersonAdminResponse;
 import com.example.bankcards.dto.person.PersonCreateRequest;
-import com.example.bankcards.dto.person.PersonResponse;
 import com.example.bankcards.dto.person.PersonUpdateRequest;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;

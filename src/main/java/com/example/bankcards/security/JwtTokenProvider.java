@@ -65,10 +65,6 @@ public class JwtTokenProvider {
         return UUID.fromString(validateToken(token).getSubject());
     }
 
-    public Role getRole(String token) {
-        return Role.valueOf(validateToken(token).get("role", String.class));
-    }
-
     public boolean isRefreshToken(String token) {
         return "refresh".equals(validateToken(token).get("type", String.class));
     }
