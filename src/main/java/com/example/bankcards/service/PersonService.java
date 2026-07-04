@@ -13,7 +13,6 @@ import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,17 +46,15 @@ public class PersonService {
 
     @Transactional
     public PersonAdminResponse create(PersonCreateRequest request) {
+        if (personRepository.findByName(request.name()).isPresent()) {
+            throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
+        }
         Person person = personMapper.toEntity(request);
         person.setRole(Role.USER);
         person.setPassword(passwordEncoder.encode(request.password()));
-        try {
-            Person saved = personRepository.save(person);
-            personRepository.flush();
-            log.info("Person created: id={}, name={}", saved.getId(), saved.getName());
-            return personMapper.toAdminResponse(saved);
-        } catch (DataIntegrityViolationException _) {
-            throw new DuplicateResourceException(String.format(PERSON_EXISTS, request.name()));
-        }
+        Person saved = personRepository.save(person);
+        log.info("Person created: id={}, name={}", saved.getId(), saved.getName());
+        return personMapper.toAdminResponse(saved);
     }
 
     @Transactional

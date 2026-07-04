@@ -93,9 +93,8 @@ class PersonServiceTest {
     @Test
     void create_shouldThrowOnDuplicateName() {
         PersonCreateRequest request = new PersonCreateRequest("Alice", "pass123");
-        Person person = createPerson(UUID.randomUUID(), "Alice");
-        when(personMapper.toEntity(request)).thenReturn(person);
-        when(personRepository.save(person)).thenThrow(new DataIntegrityViolationException("duplicate"));
+        Person existing = createPerson(UUID.randomUUID(), "Alice");
+        when(personRepository.findByName("Alice")).thenReturn(Optional.of(existing));
 
         assertThrows(DuplicateResourceException.class, () -> personService.create(request));
     }
