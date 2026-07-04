@@ -70,7 +70,7 @@ class BusinessLogicAuditTest {
 
     @Test
     void testTransferZeroAmount_shouldFail() {
-        var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.ZERO, aliceId);
+        var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.ZERO);
         HttpEntity<CardTransferRequest> entity = new HttpEntity<>(req, authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/transfers", HttpMethod.POST, entity, Void.class);
 
@@ -79,7 +79,7 @@ class BusinessLogicAuditTest {
 
     @Test
     void testTransferNegativeAmount_shouldFail() {
-        var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.valueOf(-10), aliceId);
+        var req = new CardTransferRequest(card1Id, card2Id, BigDecimal.valueOf(-10));
         HttpEntity<CardTransferRequest> entity = new HttpEntity<>(req, authHeaders(aliceToken));
         ResponseEntity<Void> resp = restTemplate.exchange("/api/transfers", HttpMethod.POST, entity, Void.class);
 

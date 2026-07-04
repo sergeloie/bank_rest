@@ -23,8 +23,6 @@ public class UserTransferController {
             @Valid @RequestBody CardTransferRequest request,
             Authentication authentication) {
         Person person = (Person) authentication.getPrincipal();
-        CardTransferRequest authRequest = new CardTransferRequest(
-                request.fromCardId(), request.toCardId(), request.amount(), person.getId());
-        return ResponseEntity.ok(transferService.transfer(authRequest));
+        return ResponseEntity.ok(transferService.transfer(request, person.getId()));
     }
 }

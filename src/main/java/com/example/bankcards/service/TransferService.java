@@ -24,9 +24,9 @@ public class TransferService {
     private final TransferHistoryRepository transferHistoryRepository;
 
     @Transactional
-    public CardTransferResponse transfer(CardTransferRequest request) {
+    public CardTransferResponse transfer(CardTransferRequest request, UUID personId) {
         log.info("Transfer initiated: fromCard={}, toCard={}, personId={}",
-                request.fromCardId(), request.toCardId(), request.personId());
+                request.fromCardId(), request.toCardId(), personId);
 
         if (request.fromCardId().equals(request.toCardId())) {
             log.warn("Transfer rejected: cannot transfer to the same card (cardId={})", request.fromCardId());
@@ -38,12 +38,12 @@ public class TransferService {
 
         Card firstCard = cardRepository.findByIdForUpdate(firstId)
                 .orElseThrow(() -> {
-                    log.warn("Transfer rejected: source card not found (cardId={})", firstId);
+                    log.warn("Transfer rejected: card not found (cardId={})", firstId);
                     return new ResourceNotFoundException("Card not found with id: " + firstId);
                 });
         Card secondCard = cardRepository.findByIdForUpdate(secondId)
                 .orElseThrow(() -> {
-                    log.warn("Transfer rejected: target card not found (cardId={})", secondId);
+                    log.warn("Transfer rejected: card not found (cardId={})", secondId);
                     return new ResourceNotFoundException("Card not found with id: " + secondId);
                 });
 
@@ -51,13 +51,12 @@ public class TransferService {
         Card toCard = firstCard.getId().equals(request.toCardId()) ? firstCard : secondCard;
 
         if (!fromCard.getPerson().getId().equals(toCard.getPerson().getId())) {
-            log.warn("Transfer rejected: cards do not belong to the same person (fromPerson={}, toPerson={})",
-                    fromCard.getPerson().getId(), toCard.getPerson().getId());
+            log.warn("Transfer rejected: cards do not belong to the same person");
             throw new InvalidCardOperationException("Can only transfer between own cards");
         }
 
-        if (!fromCard.getPerson().getId().equals(request.personId())) {
-            log.warn("Transfer rejected: cards do not belong to person {}", request.personId());
+        if (!fromCard.getPerson().getId().equals(personId)) {
+            log.warn("Transfer rejected: cards do not belong to authenticated user");
             throw new InvalidCardOperationException("Cards do not belong to this person");
         }
 

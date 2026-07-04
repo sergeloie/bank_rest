@@ -12,12 +12,10 @@ import java.util.UUID;
  * @param fromCardId UUID of the source card. Must not be null.
  * @param toCardId   UUID of the target card. Must not be null. Must differ from fromCardId.
  * @param amount     Transfer amount. Must not be null. Must be positive (> 0).
- * @param personId   UUID of the card owner. Must not be null. Both cards must belong to this person.
  */
 public record CardTransferRequest(
     @NotNull(message = "Source card id must be specified") UUID fromCardId,
     @NotNull(message = "Target card id must be specified") UUID toCardId,
-    @NotNull(message = "Amount must be specified") @Positive(message = "Amount must be positive") BigDecimal amount,
-    @NotNull(message = "Person id must be specified") UUID personId
+    @NotNull(message = "Amount must be specified") @Positive(message = "Amount must be positive") BigDecimal amount
 ) {
 }
