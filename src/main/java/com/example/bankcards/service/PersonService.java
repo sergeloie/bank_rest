@@ -52,6 +52,7 @@ public class PersonService {
         person.setPassword(passwordEncoder.encode(request.password()));
         try {
             Person saved = personRepository.save(person);
+            personRepository.flush();
             log.info("Person created: id={}, name={}", saved.getId(), saved.getName());
             return personMapper.toAdminResponse(saved);
         } catch (DataIntegrityViolationException _) {
