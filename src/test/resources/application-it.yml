@@ -13,16 +13,3 @@ spring:
     change-log: classpath:db/migration/db.changelog-master.yaml
     parameters:
       BANK_ADMIN_PASSWORD: testadmin
-
-card:
-  bin: "400000"
-  retry-limit: 100
-  encryption:
-    secret: "BankCardAES256EncryptionKey2024!!"
-  hash:
-    secret: "BankCardHmacSHA256HashSecretKey2024!"
-
-jwt:
-  secret: "my-very-long-jwt-signing-key-for-bank-cards-2024!"
-  access-expiration: 86400000 # 1 day
-  refresh-expiration: 2592000000 # 30 days
