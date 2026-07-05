@@ -19,9 +19,7 @@ public class CardSecurity {
         if (authentication == null || !(authentication.getPrincipal() instanceof Person person)) {
             return false;
         }
-        return cardRepository.findById(cardId)
-                .map(card -> card.getPerson().getId().equals(person.getId()))
-                .orElse(false);
+        return cardRepository.existsByIdAndPerson_Id(cardId, person.getId());
     }
 
     public boolean isOwnerByPersonId(UUID personId, Authentication authentication) {

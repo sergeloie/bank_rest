@@ -5,12 +5,13 @@ import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -18,21 +19,32 @@ import java.util.List;
 public class CardExpirationScheduler {
 
     private final CardRepository cardRepository;
+    private static final int BATCH_SIZE = 100;
 
     @Scheduled(cron = "0 0 2 * * *")
     @Transactional
     public void expireCards() {
         LocalDate today = LocalDate.now();
-        List<Card> expiredCards = cardRepository.findByCardStatusAndExpirationDateBefore(
-                CardStatus.ACTIVE, today);
+        int totalExpired = 0;
+        int page = 0;
 
-        for (Card card : expiredCards) {
-            card.setCardStatus(CardStatus.EXPIRED);
-        }
+        Page<Card> expiredCardsPage;
+        do {
+            expiredCardsPage = cardRepository.findByCardStatusAndExpirationDateBefore(
+                    CardStatus.ACTIVE, today, PageRequest.of(page, BATCH_SIZE));
 
-        if (!expiredCards.isEmpty()) {
-            cardRepository.saveAll(expiredCards);
-            log.info("Expired {} cards with expiration date before {}", expiredCards.size(), today);
+            if (!expiredCardsPage.getContent().isEmpty()) {
+                for (Card card : expiredCardsPage.getContent()) {
+                    card.setCardStatus(CardStatus.EXPIRED);
+                }
+                cardRepository.saveAll(expiredCardsPage.getContent());
+                totalExpired += expiredCardsPage.getContent().size();
+                page++;
+            }
+        } while (expiredCardsPage.hasNext());
+
+        if (totalExpired > 0) {
+            log.info("Expired {} cards with expiration date before {}", totalExpired, today);
         }
     }
 }

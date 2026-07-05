@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,8 +38,10 @@ class CardExpirationSchedulerTest {
         Person person = createPerson(UUID.randomUUID());
         Card card1 = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE, LocalDate.now().minusDays(1));
         Card card2 = createCard(UUID.randomUUID(), person, CardStatus.ACTIVE, LocalDate.now().minusDays(5));
-        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class)))
-                .thenReturn(List.of(card1, card2));
+
+        Page<Card> page = new PageImpl<>(List.of(card1, card2));
+        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class), any(PageRequest.class)))
+                .thenReturn(page);
 
         scheduler.expireCards();
 
@@ -47,8 +52,9 @@ class CardExpirationSchedulerTest {
 
     @Test
     void expireCards_whenNoCardsToExpire_doesNotCallSaveAll() {
-        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class)))
-                .thenReturn(List.of());
+        Page<Card> emptyPage = new PageImpl<>(List.of());
+        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class), any(PageRequest.class)))
+                .thenReturn(emptyPage);
 
         scheduler.expireCards();
 
@@ -57,12 +63,13 @@ class CardExpirationSchedulerTest {
 
     @Test
     void expireCards_callsRepositoryWithCorrectParameters() {
-        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class)))
-                .thenReturn(List.of());
+        Page<Card> emptyPage = new PageImpl<>(List.of());
+        when(cardRepository.findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class), any(PageRequest.class)))
+                .thenReturn(emptyPage);
 
         scheduler.expireCards();
 
-        verify(cardRepository).findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class));
+        verify(cardRepository).findByCardStatusAndExpirationDateBefore(eq(CardStatus.ACTIVE), any(LocalDate.class), any(PageRequest.class));
     }
 
     private Person createPerson(UUID id) {

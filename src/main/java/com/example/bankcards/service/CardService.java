@@ -113,7 +113,7 @@ public class CardService {
 
     @Transactional
     public CardAdminResponse blockCard(UUID id) {
-        Card card = cardRepository.findById(id)
+        Card card = cardRepository.findByIdWithPersonForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
         if (card.getCardStatus() != CardStatus.ACTIVE) {
@@ -127,7 +127,7 @@ public class CardService {
 
     @Transactional
     public CardAdminResponse activateCard(UUID id) {
-        Card card = cardRepository.findById(id)
+        Card card = cardRepository.findByIdWithPersonForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(CARD_NOT_FOUND, id)));
 
         if (card.getCardStatus() != CardStatus.BLOCKED) {
