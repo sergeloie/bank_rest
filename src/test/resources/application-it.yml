@@ -23,6 +23,6 @@ card:
     secret: "BankCardHmacSHA256HashSecretKey2024!"
 
 jwt:
-  secret: "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gc2lnbmluZyE="
+  secret: "my-very-long-jwt-signing-key-for-bank-cards-2024!"
   access-expiration: 86400000 # 1 day
   refresh-expiration: 2592000000 # 30 days

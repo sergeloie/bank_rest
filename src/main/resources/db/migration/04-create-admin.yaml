@@ -8,7 +8,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueComputed: random_uuid()
+                  value: "00000000-0000-0000-0000-000000000001"
               - column:
                   name: name
                   value: admin

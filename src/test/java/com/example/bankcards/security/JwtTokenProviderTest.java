@@ -18,7 +18,7 @@ class JwtTokenProviderTest {
     @BeforeEach
     void setUp() {
         JwtProperties props = new JwtProperties();
-        props.setSecret("dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gc2lnbmluZyE=");
+        props.setSecret("my-very-long-jwt-signing-key-for-bank-cards-2024!");
         props.setAccessExpiration(1800000);
         props.setRefreshExpiration(604800000);
         jwtTokenProvider = new JwtTokenProvider(props);
