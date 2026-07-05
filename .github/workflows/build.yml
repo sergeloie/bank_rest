@@ -35,10 +35,10 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          BANK_ADMIN_PASSWORD: ${{vars.BANK_ADMIN_PASSWORD}}
-          BANK_JWT_SECRET: ${{vars.BANK_JWT_SECRET}}
-          CARD_ENCRYPTION_SECRET: ${{vars.CARD_ENCRYPTION_SECRET}}
-          CARD_HASH_SECRET: ${{vars.CARD_HASH_SECRET}}
+          BANK_ADMIN_PASSWORD: ${{ secrets.BANK_ADMIN_PASSWORD }}
+          BANK_JWT_SECRET: ${{ secrets.BANK_JWT_SECRET }}
+          CARD_ENCRYPTION_SECRET: ${{ secrets.CARD_ENCRYPTION_SECRET }}
+          CARD_HASH_SECRET: ${{ secrets.CARD_HASH_SECRET }}
         run: ./gradlew build sonar --info
       - name: Show failed tests
         if: failure()
