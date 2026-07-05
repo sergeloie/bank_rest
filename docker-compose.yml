@@ -10,6 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d bank_cards"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   bank_rest:
     image: bank_rest:latest
     build: .
@@ -18,6 +24,13 @@ services:
       - "2265:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      PG_URL: jdbc:postgresql://postgres:5432/bank_cards
+      PG_USERNAME: ${POSTGRES_USER:-postgres}
+      PG_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      BANK_ADMIN_PASSWORD: ${BANK_ADMIN_PASSWORD}
+      CARD_ENCRYPTION_SECRET: ${CARD_ENCRYPTION_SECRET}
+      CARD_HASH_SECRET: ${CARD_HASH_SECRET}
+      BANK_JWT_SECRET: ${BANK_JWT_SECRET}
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
       interval: 30s
@@ -25,7 +38,8 @@ services:
       start_period: 30s
       retries: 5
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:
