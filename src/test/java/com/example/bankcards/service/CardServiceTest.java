@@ -103,9 +103,8 @@ class CardServiceTest {
 
     @Test
     void blockCard_shouldBlockActiveCard() {
-        UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
-        Person person = createPerson(personId);
+        Person person = createPerson(UUID.randomUUID());
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         when(cardRepository.findByIdWithPersonForUpdate(cardId)).thenReturn(Optional.of(card));
         when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
@@ -118,9 +117,8 @@ class CardServiceTest {
 
     @Test
     void blockCard_shouldThrowWhenAlreadyBlocked() {
-        UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
-        Person person = createPerson(personId);
+        Person person = createPerson(UUID.randomUUID());
         Card card = createCard(cardId, person, CardStatus.BLOCKED);
         when(cardRepository.findByIdWithPersonForUpdate(cardId)).thenReturn(Optional.of(card));
         assertThrows(InvalidCardOperationException.class, () -> cardService.blockCard(cardId));
@@ -135,9 +133,8 @@ class CardServiceTest {
 
     @Test
     void activateCard_shouldActivateBlockedCard() {
-        UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
-        Person person = createPerson(personId);
+        Person person = createPerson(UUID.randomUUID());
         Card card = createCard(cardId, person, CardStatus.BLOCKED);
         when(cardRepository.findByIdWithPersonForUpdate(cardId)).thenReturn(Optional.of(card));
         when(cardMaskUtil.decryptAndMask("encrypted")).thenReturn("**** **** **** 7890");
@@ -150,9 +147,8 @@ class CardServiceTest {
 
     @Test
     void activateCard_shouldThrowWhenNotBlocked() {
-        UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
-        Person person = createPerson(personId);
+        Person person = createPerson(UUID.randomUUID());
         Card card = createCard(cardId, person, CardStatus.ACTIVE);
         when(cardRepository.findByIdWithPersonForUpdate(cardId)).thenReturn(Optional.of(card));
         assertThrows(InvalidCardOperationException.class, () -> cardService.activateCard(cardId));
