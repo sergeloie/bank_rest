@@ -1311,10 +1311,6 @@
           },
           "amount": {
             "$ref": "#/components/schemas/BigDecimal"
-          },
-          "personId": {
-            "type": "string",
-            "format": "uuid"
           }
         }
       },
