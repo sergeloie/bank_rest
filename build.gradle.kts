@@ -56,6 +56,10 @@ val mapstructBindingVersion = "0.2.0"
     testAnnotationProcessor("org.projectlombok:lombok")
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
