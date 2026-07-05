@@ -1,7 +1,9 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.transfer.TransferHistoryResponse;
-import com.example.bankcards.entity.*;
+import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.Person;
+import com.example.bankcards.entity.TransferHistory;
 import com.example.bankcards.repository.TransferHistoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +18,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TransferHistoryServiceTest {

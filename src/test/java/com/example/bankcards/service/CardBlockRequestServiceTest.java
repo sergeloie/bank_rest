@@ -3,7 +3,12 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestAdminResponse;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestRequest;
 import com.example.bankcards.dto.cardblockrequest.CardBlockRequestResponse;
-import com.example.bankcards.entity.*;
+import com.example.bankcards.entity.BlockRequestStatus;
+import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.CardBlockRequest;
+import com.example.bankcards.entity.CardStatus;
+import com.example.bankcards.entity.Person;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.mapper.CardBlockRequestMapper;
@@ -25,10 +30,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CardBlockRequestServiceTest {
