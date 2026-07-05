@@ -66,8 +66,6 @@ class TransferServiceTest {
     void transfer_shouldThrowWhenSameCard() {
         UUID personId = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
-        Person person = createPerson(personId);
-        Card card = createCard(cardId, person, CardStatus.ACTIVE, BigDecimal.valueOf(500));
         CardTransferRequest request = new CardTransferRequest(cardId, cardId, BigDecimal.valueOf(100));
 
         assertThrows(InvalidCardOperationException.class, () -> transferService.transfer(request, personId));

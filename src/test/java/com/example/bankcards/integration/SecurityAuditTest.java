@@ -52,12 +52,10 @@ class SecurityAuditTest {
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass1234"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
-        UUID aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
         var bobReq = new PersonCreateRequest("Bob", "pass4567");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
         var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass4567"), AuthResponse.class);
-        String bobToken = bobLogin.getBody().accessToken();
         UUID bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
         var cardReq = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
