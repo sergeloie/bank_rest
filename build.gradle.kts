@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
     jacoco
+    id("org.sonarqube") version "7.3.1.8318"
 }
 
 group = "com.example"
@@ -49,6 +50,8 @@ val mapstructBindingVersion = "0.2.0"
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("com.h2database:h2")
+
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
 }
@@ -63,4 +66,11 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
+}
+
+sonar {
+  properties {
+    property("sonar.projectKey", "sergeloie_bank_rest")
+    property("sonar.organization", "sergeloie")
+  }
 }

@@ -75,14 +75,7 @@ Controller → Service → Repository → Database
 - [Docker](https://docs.docker.com/get-docker/) 20.10+
 - [Docker Compose](https://docs.docker.com/compose/install/) v2+
 
-### 1. Сборка образа
-
-```bash
-./gradlew bootJar
-docker compose build
-```
-
-### 2. Задание переменных окружения
+### 1. Задание переменных окружения
 
 Перед запуском необходимо задать 4 обязательных переменных:
 
@@ -95,7 +88,7 @@ export BANK_JWT_SECRET=32_символьный_ключ_JWT
 
 #### Формат и требования к секретам
 
-Все ключи передаются как **обычные UTF-8 строки** (не hex, не Base64). Код конвертирует их в байты через `getBytes(StandardCharsets.UTF_8)`.
+Все ключи передаются как **обычные UTF-8 строки** (не hex, не Base64).
 
 | Переменная | Алгоритм | Формат | Длина ключа | Пример |
 |-----------|----------|--------|-------------|--------|
@@ -110,13 +103,14 @@ export BANK_JWT_SECRET=32_символьный_ключ_JWT
 > - `CARD_ENCRYPTION_SECRET` — **строго 32 символа**. AES-256 требует ключ ровно 32 байта, иначе `Cipher.init()` выбросит `InvalidKeyException`.
 > - `CARD_HASH_SECRET` и `BANK_JWT_SECRET` — **минимум 32 символа**. JJWT проверяет это при старте.
 
-### 3. Запуск
+### 2. Запуск
 
 ```bash
 docker compose up -d
 ```
+При первом запуске Docker image с проектом соберётся автоматически
 
-### 4. Проверка работоспособности
+### 3. Проверка работоспособности
 
 ```bash
 # Health check
@@ -126,7 +120,7 @@ curl http://localhost:2265/actuator/health
 # {"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"diskSpace":{"status":"UP"}}}
 ```
 
-### 5. Первичная настройка
+### 4. Первичная настройка
 
 Администратор создаётся автоматически через Liquibase при первом запуске. Пароль берётся из переменной `BANK_ADMIN_PASSWORD` (должна содержать BCrypt-хеш).
 
