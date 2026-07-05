@@ -89,7 +89,8 @@ class CardServiceTest {
     void createCard_shouldThrowWhenPersonNotFound() {
         UUID personId = UUID.randomUUID();
         when(personRepository.findById(personId)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO)));
+        CardCreateRequest cardCreateRequest = new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO);
+        assertThrows(ResourceNotFoundException.class, () -> cardService.createCard(cardCreateRequest));
     }
 
     @Test
@@ -98,7 +99,8 @@ class CardServiceTest {
         Person person = createPerson(personId);
         person.setRole(Role.ADMIN);
         when(personRepository.findById(personId)).thenReturn(Optional.of(person));
-        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO)));
+        CardCreateRequest cardCreateRequest = new CardCreateRequest(personId, LocalDate.now().plusYears(1), BigDecimal.ZERO);
+        assertThrows(InvalidCardOperationException.class, () -> cardService.createCard(cardCreateRequest));
     }
 
     @Test

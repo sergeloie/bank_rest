@@ -55,11 +55,11 @@ class SecurityAuditTest {
 
         var bobReq = new PersonCreateRequest("Bob", "pass4567");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
-        var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass4567"), AuthResponse.class);
+        restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass4567"), AuthResponse.class);
         UUID bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
         var cardReq = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
-        var cardResp = restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq, authHeaders(adminToken)), Object.class);
+        restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq, authHeaders(adminToken)), Object.class);
         bobCardId = jdbcTemplate.queryForObject("SELECT id FROM card WHERE person_id = ?", UUID.class, bobId);
     }
 
