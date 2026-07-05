@@ -7,7 +7,6 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
-import org.springframework.util.StringUtils;
 import com.example.bankcards.exception.CardNumberGenerationException;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.UUID;

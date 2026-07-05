@@ -1,8 +1,8 @@
 package com.example.bankcards.security;
 
 import com.example.bankcards.entity.Person;
-import com.example.bankcards.entity.Role;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

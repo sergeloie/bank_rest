@@ -1,6 +1,5 @@
 package com.example.bankcards.security;
 
-import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.repository.CardRepository;
 import lombok.RequiredArgsConstructor;

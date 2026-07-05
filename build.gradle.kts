@@ -19,34 +19,38 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
+val jsonwebtokenVersion = "0.12.6"
+val openapiStarterVersion = "2.8.16"
+val mapstructVersion = "1.6.3"
+val mapstructBindingVersion = "0.2.0"
+
+    dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.liquibase:liquibase-core")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.16")
-    implementation("org.mapstruct:mapstruct:1.6.3")
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$openapiStarterVersion")
+    implementation("org.mapstruct:mapstruct:$mapstructVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jsonwebtokenVersion")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jsonwebtokenVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jsonwebtokenVersion")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
 
     compileOnly("org.projectlombok:lombok")
+
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+    annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:$mapstructBindingVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 tasks.withType<Test> {

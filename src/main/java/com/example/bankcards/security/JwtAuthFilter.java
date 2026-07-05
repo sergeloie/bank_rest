@@ -1,13 +1,12 @@
 package com.example.bankcards.security;
 
 import com.example.bankcards.entity.Person;
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.repository.PersonRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
