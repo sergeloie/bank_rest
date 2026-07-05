@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   liquibase:
     enabled: true
     change-log: classpath:db/migration/db.changelog-master.yaml
