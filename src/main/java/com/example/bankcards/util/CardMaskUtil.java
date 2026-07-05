@@ -16,7 +16,7 @@ public class CardMaskUtil {
 
     public String mask(String cardNumber) {
         if (cardNumber == null || cardNumber.length() != 16) {
-            throw new IllegalArgumentException("Masked card number empty or invalid length");
+            throw new com.example.bankcards.exception.InvalidCardOperationException("Invalid card number format");
         }
         return "**** **** **** " + cardNumber.substring(12);
     }

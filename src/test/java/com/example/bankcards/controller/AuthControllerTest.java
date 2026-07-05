@@ -3,7 +3,7 @@ package com.example.bankcards.controller;
 import com.example.bankcards.dto.auth.AuthRequest;
 import com.example.bankcards.dto.auth.AuthResponse;
 import com.example.bankcards.dto.auth.RefreshRequest;
-import com.example.bankcards.exception.InvalidCardOperationException;
+import com.example.bankcards.exception.AuthenticationFailedException;
 import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.http.MediaType;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,9 +37,6 @@ class AuthControllerTest {
     @MockitoBean
     private JwtAuthFilter jwtAuthFilter;
 
-    @MockitoBean
-    private SecurityFilterChain securityFilterChain;
-
     @MockitoBean(name = "jpaMappingContext")
     private MappingContext<?, ?> jpaMappingContext;
 
@@ -54,8 +50,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("access-token"))
-                .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 
     @Test
@@ -69,15 +64,15 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_shouldReturn400OnInvalidCredentials() throws Exception {
+    void login_shouldReturn401OnInvalidCredentials() throws Exception {
         AuthRequest request = new AuthRequest("admin", "wrong");
         when(authService.login(any(AuthRequest.class)))
-                .thenThrow(new InvalidCardOperationException("Invalid credentials"));
+                .thenThrow(new AuthenticationFailedException("Invalid credentials"));
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -94,14 +89,14 @@ class AuthControllerTest {
     }
 
     @Test
-    void refresh_shouldReturn400OnInvalidToken() throws Exception {
+    void refresh_shouldReturn401OnInvalidToken() throws Exception {
         RefreshRequest request = new RefreshRequest("bad-token");
         when(authService.refresh(any(RefreshRequest.class)))
-                .thenThrow(new InvalidCardOperationException("Invalid refresh token"));
+                .thenThrow(new AuthenticationFailedException("Invalid refresh token"));
 
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 }

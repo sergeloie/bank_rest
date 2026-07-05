@@ -6,6 +6,7 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
+import com.example.bankcards.entity.TransferHistory;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
@@ -53,6 +54,7 @@ class TransferServiceTest {
         assertEquals(BigDecimal.valueOf(200), result.amount());
         assertEquals(BigDecimal.valueOf(300), result.newFromBalance());
         assertEquals(BigDecimal.valueOf(300), result.newToBalance());
+        verify(transferHistoryRepository).save(any(TransferHistory.class));
     }
 
     @Test

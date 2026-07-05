@@ -8,6 +8,7 @@ import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Person;
 import com.example.bankcards.entity.Role;
 import org.springframework.util.StringUtils;
+import com.example.bankcards.exception.CardNumberGenerationException;
 import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
@@ -102,12 +103,12 @@ public class CardService {
                 return toAdminResponse(saved);
             } catch (org.springframework.dao.DataIntegrityViolationException e) {
                 if (attempt == 2) {
-                    throw new com.example.bankcards.exception.CardNumberGenerationException("Failed to generate unique card number after 3 attempts", e);
+                    throw new CardNumberGenerationException("Failed to generate unique card number after 3 attempts", e);
                 }
                 log.warn("Card hash collision on attempt {}, retrying", attempt + 1);
             }
         }
-        throw new com.example.bankcards.exception.CardNumberGenerationException("Failed to generate unique card number");
+        throw new CardNumberGenerationException("Failed to generate unique card number");
     }
 
     @Transactional

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.*;
 
 class CardNumberGeneratorTest {
 
-    private final int maxRetry = 1989;
+    private final int maxRetry = 100;
     private final String bin = "155155";
     private final CardRepository cardRepository = mock(CardRepository.class);
     private final CardProperties cardProperties = mock(CardProperties.class);

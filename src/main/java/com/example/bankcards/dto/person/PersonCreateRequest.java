@@ -1,6 +1,5 @@
 package com.example.bankcards.dto.person;
 
-import com.example.bankcards.entity.Person;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

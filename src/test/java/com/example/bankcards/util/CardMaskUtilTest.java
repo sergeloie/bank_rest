@@ -25,12 +25,12 @@ class CardMaskUtilTest {
     @Test
     void mask_throwIfNumberIsNull() {
         Exception exception = assertThrows(RuntimeException.class, () -> cardMaskUtil.mask(null));
-        assertEquals("Masked card number empty or invalid length", exception.getMessage());
+        assertEquals("Invalid card number format", exception.getMessage());
     }
 
     @Test
     void mask_throwIfCardNumberInvalidLength() {
         Exception exception = assertThrows(RuntimeException.class, () -> cardMaskUtil.mask("123456789012345"));
-        assertEquals("Masked card number empty or invalid length", exception.getMessage());
+        assertEquals("Invalid card number format", exception.getMessage());
     }
 }

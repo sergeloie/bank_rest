@@ -121,7 +121,7 @@ class AdminUserControllerTest {
     @Test
     void updateUser_shouldReturn200() throws Exception {
         UUID id = UUID.randomUUID();
-        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass1", Role.ADMIN);
         PersonAdminResponse dto = new PersonAdminResponse(id, "Alice", Role.ADMIN, null, null, null, null);
         when(personService.update(any(UUID.class), any(PersonUpdateRequest.class))).thenReturn(dto);
 
@@ -135,7 +135,7 @@ class AdminUserControllerTest {
     @Test
     void updateUser_shouldReturn404() throws Exception {
         UUID id = UUID.randomUUID();
-        PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass1", null);
         when(personService.update(any(UUID.class), any(PersonUpdateRequest.class)))
                 .thenThrow(new ResourceNotFoundException("Person not found"));
 

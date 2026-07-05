@@ -103,7 +103,7 @@ class PersonServiceTest {
     void update_shouldUpdatePasswordAndRole() {
         UUID id = UUID.randomUUID();
         Person person = createPerson(id, "Alice");
-        PersonUpdateRequest request = new PersonUpdateRequest("newpass", Role.ADMIN);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass1", Role.ADMIN);
         PersonAdminResponse dto = createAdminResponse("Alice");
         when(personRepository.findById(id)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenReturn(person);
@@ -121,7 +121,7 @@ class PersonServiceTest {
         UUID id = UUID.randomUUID();
         Person person = createPerson(id, "Alice");
         person.setPasswordVersion(0L);
-        PersonUpdateRequest request = new PersonUpdateRequest("newpass", null);
+        PersonUpdateRequest request = new PersonUpdateRequest("newpass1", null);
         PersonAdminResponse dto = createAdminResponse("Alice");
         when(personRepository.findById(id)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenReturn(person);
@@ -135,7 +135,7 @@ class PersonServiceTest {
     @Test
     void update_shouldThrowWhenNotFound() {
         UUID id = UUID.randomUUID();
-        PersonUpdateRequest request = new PersonUpdateRequest("pass", Role.USER);
+        PersonUpdateRequest request = new PersonUpdateRequest("pass1234", Role.USER);
         when(personRepository.findById(id)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> personService.update(id, request));
     }

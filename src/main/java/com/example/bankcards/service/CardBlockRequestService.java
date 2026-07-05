@@ -14,7 +14,6 @@ import com.example.bankcards.mapper.CardBlockRequestMapper;
 import com.example.bankcards.repository.CardBlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.PersonRepository;
-import com.example.bankcards.util.CardEncryptionUtil;
 import com.example.bankcards.util.CardMaskUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ public class CardBlockRequestService {
     private final CardRepository cardRepository;
     private final PersonRepository personRepository;
     private final CardBlockRequestMapper cardBlockRequestMapper;
-    private final CardEncryptionUtil cardEncryptionUtil;
     private final CardMaskUtil cardMaskUtil;
 
     @Transactional
@@ -59,7 +57,7 @@ public class CardBlockRequestService {
 
         CardBlockRequest saved = cardBlockRequestRepository.save(blockRequest);
         log.info("Block request created: id={}, cardId={}, personId={}", saved.getId(), card.getId(), person.getId());
-        String maskedCardNumber = computeMaskedNumber(card);
+        String maskedCardNumber = cardMaskUtil.decryptAndMask(card.getEncryptedNumber());
         return new CardBlockRequestResponse(maskedCardNumber, saved.getBlockRequestStatus());
     }
 
@@ -100,12 +98,8 @@ public class CardBlockRequestService {
         return toAdminResponse(blockRequest);
     }
 
-    private String computeMaskedNumber(Card card) {
-        return cardMaskUtil.decryptAndMask(card.getEncryptedNumber());
-    }
-
     private CardBlockRequestAdminResponse toAdminResponse(CardBlockRequest entity) {
-        String maskedCardNumber = computeMaskedNumber(entity.getCard());
+        String maskedCardNumber = cardMaskUtil.decryptAndMask(entity.getCard().getEncryptedNumber());
         return new CardBlockRequestAdminResponse(
                 entity.getId(),
                 entity.getCard().getId(),
