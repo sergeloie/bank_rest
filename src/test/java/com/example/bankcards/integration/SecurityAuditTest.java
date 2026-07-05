@@ -35,11 +35,7 @@ class SecurityAuditTest {
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private PasswordEncoder passwordEncoder;
 
-    private String adminToken;
     private String aliceToken;
-    private String bobToken;
-    private UUID aliceId;
-    private UUID bobId;
     private UUID bobCardId;
 
     @BeforeAll
@@ -50,19 +46,19 @@ class SecurityAuditTest {
         var loginReq = new AuthRequest("admin", "testadmin");
         ResponseEntity<AuthResponse> loginResp = restTemplate.postForEntity(
                 "/api/auth/login", loginReq, AuthResponse.class);
-        adminToken = loginResp.getBody().accessToken();
+        String adminToken = loginResp.getBody().accessToken();
 
         var aliceReq = new PersonCreateRequest("Alice", "pass1234");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(aliceReq, authHeaders(adminToken)), Void.class);
         var aliceLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Alice", "pass1234"), AuthResponse.class);
         aliceToken = aliceLogin.getBody().accessToken();
-        aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
+        UUID aliceId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Alice'", UUID.class);
 
         var bobReq = new PersonCreateRequest("Bob", "pass4567");
         restTemplate.exchange("/api/admin/users", HttpMethod.POST, new HttpEntity<>(bobReq, authHeaders(adminToken)), Void.class);
         var bobLogin = restTemplate.postForEntity("/api/auth/login", new AuthRequest("Bob", "pass4567"), AuthResponse.class);
-        bobToken = bobLogin.getBody().accessToken();
-        bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
+        String bobToken = bobLogin.getBody().accessToken();
+        UUID bobId = jdbcTemplate.queryForObject("SELECT id FROM person WHERE name = 'Bob'", UUID.class);
 
         var cardReq = new CardCreateRequest(bobId, LocalDate.now().plusYears(1), BigDecimal.valueOf(100));
         var cardResp = restTemplate.exchange("/api/admin/cards", HttpMethod.POST, new HttpEntity<>(cardReq, authHeaders(adminToken)), Object.class);
