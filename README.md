@@ -1,105 +1,176 @@
-<h1>🚀 Разработка Системы Управления Банковскими Картами</h1>
+# Bank Cards
 
-<h2>📁 Стартовая структура</h2>
-  <p>
-    Проектная структура с директориями и описательными файлами (<code>README Controller.md</code>, <code>README Service.md</code> и т.д.) уже подготовлена.<br />
-    Все реализации нужно добавлять <strong>в соответствующие директории</strong>.
-  </p>
-  <p>
-    После завершения разработки <strong>временные README-файлы нужно удалить</strong>, чтобы они не попадали в итоговую сборку.
-  </p>
-  
-<h2>📝 Описание задачи</h2>
-  <p>Разработать backend-приложение на Java (Spring Boot) для управления банковскими картами:</p>
-  <ul>
-    <li>Создание и управление картами</li>
-    <li>Просмотр карт</li>
-    <li>Переводы между своими картами</li>
-  </ul>
+REST API для управления банковскими картами. Позволяет администраторам управлять пользователями и картами, а обычным пользователям — просматривать карты, выполнять переводы и запрашивать блокировку.
 
-<h2>💳 Атрибуты карты</h2>
-  <ul>
-    <li>Номер карты (зашифрован, отображается маской: <code>**** **** **** 1234</code>)</li>
-    <li>Владелец</li>
-    <li>Срок действия</li>
-    <li>Статус: Активна, Заблокирована, Истек срок</li>
-    <li>Баланс</li>
-  </ul>
+## Технологии
 
-<h2>🧾 Требования</h2>
+- **Java 25** / **Spring Boot 3.5**
+- **Spring Security** + JWT (аутентификация, авторизация по ролям ADMIN/USER)
+- **Spring Data JPA** + Hibernate (работа с БД)
+- **PostgreSQL** (прод) / **H2** (разработка)
+- **Liquibase** (миграции схемы БД)
+- **MapStruct** (маппинг entity ↔ DTO)
+- **Lombok** (генерация бойлерплейта)
+- **Springdoc OpenAPI** (Swagger-документация)
 
-<h3>✅ Аутентификация и авторизация</h3>
-  <ul>
-    <li>Spring Security + JWT</li>
-    <li>Роли: <code>ADMIN</code> и <code>USER</code></li>
-  </ul>
+## Архитектура
 
-<h3>✅ Возможности</h3>
-<strong>Администратор:</strong>
-  <ul>
-    <li>Создаёт, блокирует, активирует, удаляет карты</li>
-    <li>Управляет пользователями</li>
-    <li>Видит все карты</li>
-  </ul>
+```
+Controller → Service → Repository → Database
+```
 
-<strong>Пользователь:</strong>
-  <ul>
-    <li>Просматривает свои карты (поиск + пагинация)</li>
-    <li>Запрашивает блокировку карты</li>
-    <li>Делает переводы между своими картами</li>
-    <li>Смотрит баланс</li>
-  </ul>
+| Слой | Описание |
+|------|----------|
+| Controller | REST-эндпоинты, валидация входных данных |
+| Service | Бизнес-логика, транзакции, проверки |
+| Repository | Запросы к БД через Spring Data JPA |
+| Entity | JPA-модели, соответствующие таблицам |
+| DTO | Объекты передачи данных (API-контракт) |
+| Security | JWT-аутентификация, RBAC |
 
-<h3>✅ API</h3>
-  <ul>
-    <li>CRUD для карт</li>
-    <li>Переводы между своими картами</li>
-    <li>Фильтрация и постраничная выдача</li>
-    <li>Валидация и сообщения об ошибках</li>
-  </ul>
+## API Endpoints
 
-<h3>✅ Безопасность</h3>
-  <ul>
-    <li>Шифрование данных</li>
-    <li>Ролевой доступ</li>
-    <li>Маскирование номеров карт</li>
-  </ul>
+### Аутентификация (публичные)
+| Метод | Путь | Описание |
+|-------|------|----------|
+| POST | `/api/auth/login` | Вход, возврат JWT-токенов |
+| POST | `/api/auth/refresh` | Обновление токена |
 
-<h3>✅ Работа с БД</h3>
-  <ul>
-    <li>PostgreSQL или MySQL</li>
-    <li>Миграции через Liquibase (<code>src/main/resources/db/migration</code>)</li>
-  </ul>
+### Администратор (ROLE_ADMIN)
+| Метод | Путь | Описание |
+|-------|------|----------|
+| GET | `/api/admin/users` | Список пользователей |
+| GET | `/api/admin/users/{id}` | Пользователь по ID |
+| POST | `/api/admin/users` | Создать пользователя |
+| PUT | `/api/admin/users/{id}` | Обновить пользователя |
+| DELETE | `/api/admin/users/{id}` | Удалить пользователя |
+| GET | `/api/admin/cards` | Список карт (фильтр по user/status) |
+| GET | `/api/admin/cards/{id}` | Карта по ID |
+| POST | `/api/admin/cards` | Создать карту |
+| PATCH | `/api/admin/cards/{id}/block` | Заблокировать карту |
+| PATCH | `/api/admin/cards/{id}/activate` | Активировать карту |
+| DELETE | `/api/admin/cards/{id}` | Удалить карту |
+| GET | `/api/admin/block-requests/pending` | Ожидающие запросы на блокировку |
+| PATCH | `/api/admin/block-requests/{id}/approve` | Одобрить запрос |
+| PATCH | `/api/admin/block-requests/{id}/reject` | Отклонить запрос |
+| GET | `/api/admin/transfers` | История переводов |
 
-<h3>✅ Документация</h3>
-  <ul>
-    <li>Swagger UI / OpenAPI — <code>docs/openapi.yaml</code></li>
-    <li><code>README.md</code> с инструкцией запуска</li>
-  </ul>
+### Пользователь (ROLE_USER)
+| Метод | Путь | Описание |
+|-------|------|----------|
+| GET | `/api/cards/person/{personId}` | Мои карты |
+| GET | `/api/cards/{id}` | Карта по ID |
+| PUT | `/api/cards/{id}/block-request` | Запрос на блокировку |
+| POST | `/api/transfers` | Перевод между своими картами |
 
-<h3>✅ Развёртывание и тестирование</h3>
-  <ul>
-    <li>Docker Compose для dev-среды</li>
-    <li>Liquibase миграции</li>
-    <li>Юнит-тесты ключевой бизнес-логики</li>
-  </ul>
+### Мониторинг
+| Метод | Путь | Описание |
+|-------|------|----------|
+| GET | `/actuator/health` | Проверка состояния сервиса и БД |
 
-<h2>📊 Оценка</h2>
-  <ul>
-    <li>Соответствие требованиям</li>
-    <li>Чистота архитектуры и кода</li>
-    <li>Безопасность</li>
-    <li>Обработка ошибок</li>
-    <li>Покрытие тестами</li>
-    <li>ООП и уровни абстракции</li>
-  </ul>
+## Запуск через Docker Compose
 
-<h2>💡 Технологии</h2>
-  <p>
-    Java 17+, Spring Boot, Spring Security, Spring Data JPA, PostgreSQL/MySQL, Liquibase, Docker, JWT, Swagger (OpenAPI)
-  </p>
+### Предварительные требования
 
-<h2> 📤 Формат сдачи</h2>
-<p>
-Весь код и изменения принимаются только через git-репозиторий с открытым доступом к проекту. Отправка файлов в любом виде не принимается.
-  </p>
+- [Docker](https://docs.docker.com/get-docker/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/install/) v2+
+
+### 1. Сборка образа
+
+```bash
+./gradlew bootJar
+docker compose build
+```
+
+### 2. Задание переменных окружения
+
+Перед запуском необходимо задать 4 обязательных переменных:
+
+```bash
+export BANK_ADMIN_PASSWORD=$2a$10$ bcrypt_хеш_пароля
+export CARD_ENCRYPTION_SECRET=32_символьный_ключ_AES
+export CARD_HASH_SECRET=32_символьный_ключ_HMAC
+export BANK_JWT_SECRET=32_символьный_ключ_JWT
+```
+
+#### Формат и требования к секретам
+
+Все ключи передаются как **обычные UTF-8 строки** (не hex, не Base64). Код конвертирует их в байты через `getBytes(StandardCharsets.UTF_8)`.
+
+| Переменная | Алгоритм | Формат | Длина ключа | Пример |
+|-----------|----------|--------|-------------|--------|
+| `BANK_ADMIN_PASSWORD` | BCrypt | Хеш пароля | — | `$2a$10$rS.40zL8k2QE8X9zG8Yz7OeMKH5vZ8J3X6WqYbK1vN9mH2dT5iG6a` |
+| `CARD_ENCRYPTION_SECRET` | AES-256-GCM | UTF-8 строка | **строго 32 символа** | `My32ByteAesEncryptionKey!!!!` |
+| `CARD_HASH_SECRET` | HMAC-SHA256 | UTF-8 строка | **мин. 32 символа** | `My32ByteHmacSha256SecretKey!` |
+| `BANK_JWT_SECRET` | HMAC-SHA256 (JJWT) | UTF-8 строка | **мин. 32 символа** | `My32ByteJwtSigningSecretKey!!` |
+
+> **Важно:**
+> - `BANK_ADMIN_PASSWORD` — BCrypt-хеш, а не открытый текст. Liquibase подставляет значение напрямую в SQL.
+>   Генерация: `htpasswd -bnBC 10 "" 'ваш_пароль' | tr -d ':\n'`
+> - `CARD_ENCRYPTION_SECRET` — **строго 32 символа**. AES-256 требует ключ ровно 32 байта, иначе `Cipher.init()` выбросит `InvalidKeyException`.
+> - `CARD_HASH_SECRET` и `BANK_JWT_SECRET` — **минимум 32 символа**. JJWT проверяет это при старте.
+
+### 3. Запуск
+
+```bash
+docker compose up -d
+```
+
+### 4. Проверка работоспособности
+
+```bash
+# Health check
+curl http://localhost:2265/actuator/health
+
+# Expected response:
+# {"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"diskSpace":{"status":"UP"}}}
+```
+
+### 5. Первичная настройка
+
+Администратор создаётся автоматически через Liquibase при первом запуске. Пароль берётся из переменной `BANK_ADMIN_PASSWORD` (должна содержать BCrypt-хеш).
+
+```bash
+# Вход под администратором (пароль — открытый текст, corresponding хеш уже в БД)
+curl -X POST http://localhost:2265/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"name":"admin","password":"открытый_текст_пароля"}'
+```
+
+### Остановка
+
+```bash
+docker compose down          # Остановить контейнеры
+docker compose down -v       # Остановить + удалить данные БД
+```
+
+## Порты
+
+| Сервис | Внутренний | Хост |
+|--------|-----------|------|
+| Bank Cards API | 8080 | **2265** |
+| PostgreSQL | 5432 | 5432 |
+
+## Health Check
+
+```
+GET http://localhost:2265/actuator/health
+```
+
+Ответ `{"status":"UP"}` подтверждает, что приложение и БД работают корректно.
+
+## Swagger UI
+
+Документация API доступна по адресу:
+
+```
+http://localhost:2265/swagger-ui.html
+```
+
+## Дополнительные переменные окружения
+
+| Переменная | Описание | По умолчанию |
+|-----------|----------|-------------|
+| `POSTGRES_USER` | Логин PostgreSQL | `postgres` |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL | `postgres` |
+| `SPRING_PROFILES_ACTIVE` | Профиль Spring | `prod` (в docker-compose) |
