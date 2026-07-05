@@ -36,3 +36,14 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonar --info
+      - name: Show failed tests
+        if: failure()
+        run: |
+          find build/reports/tests -name "*.html" -exec echo {} \;
+          cat build/test-results/test/*.xml | grep -A 5 'failure'
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: build/reports/tests/test/
