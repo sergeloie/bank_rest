@@ -1,3 +1,7 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sergeloie_bank_rest&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sergeloie_bank_rest)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sergeloie_bank_rest&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sergeloie_bank_rest)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sergeloie_bank_rest&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sergeloie_bank_rest)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sergeloie_bank_rest&metric=bugs)](https://sonarcloud.io/summary/new_code?id=sergeloie_bank_rest)
 # Bank Cards
 
 REST API для управления банковскими картами. Позволяет администраторам управлять пользователями и картами, а обычным пользователям — просматривать карты, выполнять переводы и запрашивать блокировку.
