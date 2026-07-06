@@ -39,7 +39,7 @@ jobs:
           BANK_JWT_SECRET: ${{ secrets.BANK_JWT_SECRET }}
           CARD_ENCRYPTION_SECRET: ${{ secrets.CARD_ENCRYPTION_SECRET }}
           CARD_HASH_SECRET: ${{ secrets.CARD_HASH_SECRET }}
-        run: ./gradlew build sonar --info
+        run: ./gradlew build jacocoTestReport sonar --info
       - name: Show failed tests
         if: failure()
         run: |
@@ -51,3 +51,9 @@ jobs:
         with:
           name: test-report
           path: build/reports/tests/test/
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/html/

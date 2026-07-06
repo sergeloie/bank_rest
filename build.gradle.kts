@@ -76,5 +76,6 @@ sonar {
   properties {
     property("sonar.projectKey", "sergeloie_bank_rest")
     property("sonar.organization", "sergeloie")
+    property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
